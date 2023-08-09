@@ -262,6 +262,44 @@ def get_figure_4_psth(data='events',experience_level='Familiar',mesoscope_only=F
     return dfs_filtered
 
 
+def plot_figure_4_averages_licking(dfs,data='filtered_events',savefig=False,\
+    areas=['VISp','VISl'],depths=['upper','lower'],experience_level='Familiar',
+    strategy = 'visual_strategy_session',depth='layer',meso=False):
+
+    fig, ax = plt.subplots(3,3,figsize=(10,7.75),sharey='row',squeeze=False) 
+    labels=['Excitatory','Sst Inhibitory','Vip Inhibitory']
+    error_type='sem'
+    for index, full_df in enumerate(dfs): 
+        max_y = [0,0,0]
+        ylabel=labels[index] +'\n(Ca$^{2+}$ events)'
+        max_y[0] = plot_condition_experience(full_df, 'licked', experience_level,
+            strategy, ax=ax[index, 0], ylabel=ylabel,
+            error_type=error_type,areas=areas,depths=depths,depth=depth)
+        #max_y[1] = plot_condition_experience(full_df, 'hit', experience_level,
+        #    strategy, ax=ax[index, 1],ylabel='',
+        #    error_type=error_type,areas=areas,depths=depths,depth=depth)
+        #max_y[2] = plot_condition_experience(full_df, 'miss', experience_level,
+        #    strategy, ax=ax[index, 2],ylabel='',
+        #    error_type=error_type,areas=areas,depths=depths,depth=depth)
+        ax[index,0].set_ylim(top = 1.05*np.max(max_y))
+    for x in [0,1,2]:
+            ax[x,0].set_xlabel('time from lick bout start (s)',fontsize=16)
+            ax[x,1].set_xlabel('time from false alarm (s)',fontsize=16)
+            ax[x,2].set_xlabel('time from trial FA (s)',fontsize=16)
+
+    # Clean up
+    plt.tight_layout()
+    if savefig:
+        if meso:
+            filename = PSTH_DIR + data + '/population_averages/'+\
+                'figure_4_comparisons_psth_meso_licking_'+experience_level+'.svg'        
+        else:
+            filename = PSTH_DIR + data + '/population_averages/'+\
+                'figure_4_comparisons_psth_licking_'+experience_level+'.svg' 
+        print('Figure saved to: '+filename)
+        plt.savefig(filename)
+
+
 def plot_figure_4_averages(dfs,data='filtered_events',savefig=False,\
     areas=['VISp','VISl'],depths=['upper','lower'],experience_level='Familiar',
     strategy = 'visual_strategy_session',depth='layer',meso=False):
