@@ -64,7 +64,8 @@ def build_population_df(summary_df,df_type='image_df',cre='Vip-IRES-Cre',
     '''
         Generates the summary data files by aggregating over ophys experiment
     '''
-
+    print('copy the files first before updating incase something fails')
+    return
 
     batch_size=50
     batch=False
@@ -597,29 +598,19 @@ def get_conditions():
         'hit':['hit','is_change & rewarded'],
         'miss':['miss','is_change & not rewarded'],
         'licked':['licked','lick_bout_start'],
-        'engaged_v1_image':['engaged_v1_image','(not omitted) & (not is_change) & engagement_v1'],
+        'image_fa':['image_fa','lick_bout_start & not is_change'],
+        'image_cr':['image_cr','not lick_bout_start & not is_change'],
         'engaged_v2_image':['engaged_v2_image','(not omitted) & (not is_change) & engagement_v2'],
-        'disengaged_v1_image':['disengaged_v1_image','(not omitted) & (not is_change) & (not engagement_v1)'],
         'disengaged_v2_image':['disengaged_v2_image','(not omitted) & (not is_change) & (not engagement_v2)'],
-        'engaged_v1_change':['engaged_v1_change','engagement_v1 & is_change'],
         'engaged_v2_change':['engaged_v2_change','engagement_v2 & is_change'],
-        'disengaged_v1_change':['disengaged_v1_change','(not engagement_v1) & is_change'],
         'disengaged_v2_change':['disengaged_v2_change','(not engagement_v2) & is_change'],
-        'engaged_v1_omission':['engaged_v1_omission','engagement_v1 & omitted'],
         'engaged_v2_omission':['engaged_v2_omission','engagement_v2 & omitted'],
-        'disengaged_v1_omission':['disengaged_v1_omission','(not engagement_v1) & omitted'],
         'disengaged_v2_omission':['disengaged_v2_omission','(not engagement_v2) & omitted'],
-        'engaged_v1_hit':['engaged_v1_hit','engagement_v1 & is_change & rewarded'],
         'engaged_v2_hit':['engaged_v2_hit','engagement_v2 & is_change & rewarded'],
-        'disengaged_v1_hit':['disengaged_v1_hit','(not engagement_v1) & is_change & rewarded'],
         'disengaged_v2_hit':['disengaged_v2_hit','(not engagement_v2) & is_change & rewarded'],
-        'engaged_v1_miss':['engaged_v1_miss','engagement_v1 & is_change & (not rewarded)'],
         'engaged_v2_miss':['engaged_v2_miss','engagement_v2 & is_change & (not rewarded)'],
-        'disengaged_v1_miss':['disengaged_v1_miss','(not engagement_v1) & is_change & (not rewarded)'],
         'disengaged_v2_miss':['disengaged_v2_miss','(not engagement_v2) & is_change & (not rewarded)'],       
-        'engaged_v1_licked':['engaged_v1_licked','engagement_v1 & lick_bout_start'],
         'engaged_v2_licked':['engaged_v2_licked','engagement_v2 & lick_bout_start'],
-        'disengaged_v1_licked':['disengaged_v1_licked','(not engagement_v1) & lick_bout_start'],
         'disengaged_v2_licked':['disengaged_v2_licked','(not engagement_v2) & lick_bout_start'],       
     }
     return conditions
