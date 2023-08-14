@@ -1,4 +1,4 @@
-import visual_behavior_glm.build_dataframes as bd
+import visual_behavior_glm_strategy.build_dataframes as bd
 
 import argparse
 
@@ -28,6 +28,6 @@ if __name__ == '__main__':
     print('full interval') 
     bd.build_response_df_experiment(session,data,first=False,second=False)
 
-    print('behavior')
-    bd.build_behavior_df_experiment(session)
+    #print('behavior')
+    #bd.build_behavior_df_experiment(session)
     print('grand finished')

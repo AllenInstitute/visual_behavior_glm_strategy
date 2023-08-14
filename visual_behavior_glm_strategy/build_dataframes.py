@@ -64,8 +64,6 @@ def build_population_df(summary_df,df_type='image_df',cre='Vip-IRES-Cre',
     '''
         Generates the summary data files by aggregating over ophys experiment
     '''
-    print('copy the files first before updating incase something fails')
-    return
 
     batch_size=50
     batch=False
@@ -282,6 +280,7 @@ def build_response_df_experiment(session,data,first=False,second=False,image=Fal
     # loop over cells 
     cell_specimen_ids = session.cell_specimen_table.index.values
     print('Iterating over cells for this experiment to build image by image dataframes')
+    print('version 2')
     image_dfs = []
     for index, cell_id in tqdm(enumerate(cell_specimen_ids),
         total=len(cell_specimen_ids),desc='Iterating Cells'):
