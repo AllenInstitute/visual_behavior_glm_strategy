@@ -264,7 +264,7 @@ def get_figure_4_psth(data='events',experience_level='Familiar',mesoscope_only=F
 
 def plot_figure_4_averages_licking(dfs,data='filtered_events',savefig=False,\
     areas=['VISp','VISl'],depths=['upper','lower'],experience_level='Familiar',
-    strategy = 'visual_strategy_session',depth='layer',meso=False):
+    strategy = 'visual_strategy_session',depth='layer',meso=False,ylims = None):
 
     fig, ax = plt.subplots(3,3,figsize=(10,7.75),sharey='row',squeeze=False) 
     labels=['Excitatory','Sst Inhibitory','Vip Inhibitory']
@@ -280,12 +280,15 @@ def plot_figure_4_averages_licking(dfs,data='filtered_events',savefig=False,\
             error_type=error_type,areas=areas,depths=depths,depth=depth)
         max_y[2] = plot_condition_experience(full_df, 'image_cr', experience_level,
             strategy, ax=ax[index, 2],ylabel='',
-            error_type=error_type,areas=areas,depths=depths,depth=depth)
-        ax[index,0].set_ylim(top = 1.05*np.max(max_y))
+            error_type=error_type,areas=areas,depths=depths,depth=depth)    
+        if ylims is None:
+            ax[index,0].set_ylim(top = 1.05*np.max(max_y))
+        else:
+            ax[index,0].set_ylim(top = ylims[index])
     for x in [0,1,2]:
-            ax[x,0].set_xlabel('time from lick bout start (s)',fontsize=16)
-            ax[x,1].set_xlabel('time from false alarm (s)',fontsize=16)
-            ax[x,2].set_xlabel('time from trial FA (s)',fontsize=16)
+            ax[x,0].set_xlabel('lick bout start (s)',fontsize=16)
+            ax[x,1].set_xlabel('false alarm (s)',fontsize=16)
+            ax[x,2].set_xlabel('correct reject (s)',fontsize=16)
 
     # Clean up
     plt.tight_layout()
@@ -307,6 +310,7 @@ def plot_figure_4_averages(dfs,data='filtered_events',savefig=False,\
     fig, ax = plt.subplots(3,3,figsize=(10,7.75),sharey='row',squeeze=False) 
     labels=['Excitatory','Sst Inhibitory','Vip Inhibitory']
     error_type='sem'
+    ylims = [0,0,0]
     for index, full_df in enumerate(dfs): 
         max_y = [0,0,0]
         ylabel=labels[index] +'\n(Ca$^{2+}$ events)'
@@ -320,6 +324,7 @@ def plot_figure_4_averages(dfs,data='filtered_events',savefig=False,\
             strategy, ax=ax[index, 2],ylabel='',
             error_type=error_type,areas=areas,depths=depths,depth=depth)
         ax[index,0].set_ylim(top = 1.05*np.max(max_y))
+        ylims[index] = 1.05*np.max(max_y)
     for x in [0,1,2]:
             ax[x,0].set_xlabel('time from omission (s)',fontsize=16)
             ax[x,1].set_xlabel('time from hit (s)',fontsize=16)
@@ -336,6 +341,7 @@ def plot_figure_4_averages(dfs,data='filtered_events',savefig=False,\
                 'figure_4_comparisons_psth_'+experience_level+'.svg' 
         print('Figure saved to: '+filename)
         plt.savefig(filename)
+    return ylims
 
 def add_cell_selection_labels(dfs, summary_df):
     for i in [0,1,2]:

@@ -567,6 +567,26 @@ def get_full_average(session, averages, full_df, condition):
     # Get conditional average
     if condition[1]=='':
         x = full_df.groupby('time')['response'].mean()
+    elif condition[0] == 'hit_censored':
+        # Ensure conditional average is the same length
+        t = np.sort(full_df['time'].unique())
+        x = np.empty(np.shape(t))
+        x[:] = 0  
+        
+        # Filter by condition, censor rewards, then average
+        temp = full_df.query(condition[1]).copy()
+        temp['before_reward'] = temp['time'] < temp['reward_latency']
+        x = temp.query('before_reward').groupby('time')['response'].mean()      
+    elif condition[0] == 'hit_delay_censored':
+        # Ensure conditional average is the same length
+        t = np.sort(full_df['time'].unique())
+        x = np.empty(np.shape(t))
+        x[:] = 0  
+        
+        # Filter by condition, censor rewards, then average
+        temp = full_df.query(condition[1]).copy()
+        temp['before_reward'] = temp['time'] < (temp['reward_latency'] +0.065)
+        x = temp.query('before_reward').groupby('time')['response'].mean()    
     else:
         x = full_df.query(condition[1]).groupby('time')['response'].mean()
 
@@ -599,6 +619,8 @@ def get_conditions():
         'licked':['licked','lick_bout_start'],
         'image_fa':['image_fa','lick_bout_start & not is_change'],
         'image_cr':['image_cr','not lick_bout_start & not is_change'],
+        'hit_censored':['hit_censored', 'is_change & rewarded'],
+        'hit_delay_censored':['hit_delay_censored', 'is_change & rewarded'],
         'engaged_v2_image':['engaged_v2_image','(not omitted) & (not is_change) & engagement_v2'],
         'disengaged_v2_image':['disengaged_v2_image','(not omitted) & (not is_change) & (not engagement_v2)'],
         'engaged_v2_change':['engaged_v2_change','engagement_v2 & is_change'],
