@@ -275,12 +275,12 @@ def plot_figure_4_averages_licking(dfs,data='filtered_events',savefig=False,\
         max_y[0] = plot_condition_experience(full_df, 'licked', experience_level,
             strategy, ax=ax[index, 0], ylabel=ylabel,
             error_type=error_type,areas=areas,depths=depths,depth=depth)
-        #max_y[1] = plot_condition_experience(full_df, 'hit', experience_level,
-        #    strategy, ax=ax[index, 1],ylabel='',
-        #    error_type=error_type,areas=areas,depths=depths,depth=depth)
-        #max_y[2] = plot_condition_experience(full_df, 'miss', experience_level,
-        #    strategy, ax=ax[index, 2],ylabel='',
-        #    error_type=error_type,areas=areas,depths=depths,depth=depth)
+        max_y[1] = plot_condition_experience(full_df, 'image_fa', experience_level,
+            strategy, ax=ax[index, 1],ylabel='',
+            error_type=error_type,areas=areas,depths=depths,depth=depth)
+        max_y[2] = plot_condition_experience(full_df, 'image_cr', experience_level,
+            strategy, ax=ax[index, 2],ylabel='',
+            error_type=error_type,areas=areas,depths=depths,depth=depth)
         ax[index,0].set_ylim(top = 1.05*np.max(max_y))
     for x in [0,1,2]:
             ax[x,0].set_xlabel('time from lick bout start (s)',fontsize=16)
