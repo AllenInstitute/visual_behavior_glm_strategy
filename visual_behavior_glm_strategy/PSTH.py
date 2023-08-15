@@ -230,16 +230,16 @@ def get_figure_4_behavioral(data='running',experience_level="Familiar",mesoscope
     if mesoscope_only:
         experiment_table = glm_params.get_experiment_table().reset_index()
         vip_full_filtered = pd.merge(vip_full_filtered,
-            experiment_table[['ophys_experiment_id','equipment_name']],
-            on='ophys_experiment_id')
+            experiment_table[['behavior_session_id','equipment_name']],
+            on='behavior_session_id')
         vip_full_filtered = vip_full_filtered.query('equipment_name == "MESO.1"').copy()
         sst_full_filtered = pd.merge(sst_full_filtered,
-            experiment_table[['ophys_experiment_id','equipment_name']],
-            on='ophys_experiment_id')
+            experiment_table[['behavior_session_id','equipment_name']],
+            on='behavior_session_id')
         sst_full_filtered = sst_full_filtered.query('equipment_name == "MESO.1"').copy()
         exc_full_filtered = pd.merge(exc_full_filtered,
-            experiment_table[['ophys_experiment_id','equipment_name']],
-            on='ophys_experiment_id')
+            experiment_table[['behavior_session_id','equipment_name']],
+            on='behavior_session_id')
         exc_full_filtered = exc_full_filtered.query('equipment_name == "MESO.1"').copy()
 
     # merge cell types
@@ -383,6 +383,12 @@ def plot_figure_4_averages_reward(dfs,data='filtered_events',savefig=False,\
         print('Figure saved to: '+filename)
         plt.savefig(filename)
 
+def plot_figure_4_behavioral(dfs, data='pupil'):
+    for df in dfs:
+        df['targeted_structure'] = 'behavior'
+        df['layer'] = 'behavior' 
+    ylims = plot_figure_4_averages(dfs, data=data, areas=['behavior'],depths=['behavior'])
+    plot_figure_4_averages_licking(dfs,data=data,areas=['behavior'],depths=['behavior'],ylims=ylims)
 
 def plot_figure_4_averages(dfs,data='filtered_events',savefig=False,\
     areas=['VISp','VISl'],depths=['upper','lower'],experience_level='Familiar',

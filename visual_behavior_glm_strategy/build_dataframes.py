@@ -77,6 +77,10 @@ def build_population_df(summary_df,df_type='image_df',cre='Vip-IRES-Cre',
     summary_df = summary_df.query('cre_line == @cre')
     summary_df = summary_df.query('experience_level == @experience_level')
     oeids = np.concatenate(summary_df['ophys_experiment_id'].values) 
+    if data in ['running','pupil']:
+        temp = summary_df.drop_duplicates(subset='behavior_session_id').copy()
+        temp['ophys_experiment_id'] = [x[0] for x in temp['ophys_experiment_id']]
+        oeids = temp['ophys_experiment_id'].values
 
     # make list of columns to drop for space
     cols_to_drop = [
