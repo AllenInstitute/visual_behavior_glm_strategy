@@ -302,6 +302,54 @@ def plot_figure_4_averages_licking(dfs,data='filtered_events',savefig=False,\
         print('Figure saved to: '+filename)
         plt.savefig(filename)
 
+def process_temp(dfs):
+    time = dfs[0].query('condition == "hit"').iloc[0]['time']
+    for df in dfs:
+        df['response'] = [np.pad(x,(0,121-len(x)), 'constant',constant_values=0)
+            for x in df['response'].values]
+        df['time'] = [time if len(x) != 121 else x for x in df['time']]
+    return dfs
+
+def plot_figure_4_averages_reward(dfs,data='filtered_events',savefig=False,\
+    areas=['VISp','VISl'],depths=['upper','lower'],experience_level='Familiar',
+    strategy = 'visual_strategy_session',depth='layer',meso=False,ylims = None):
+
+    fig, ax = plt.subplots(3,3,figsize=(10,7.75),sharey='row',squeeze=False) 
+    labels=['Excitatory','Sst Inhibitory','Vip Inhibitory']
+    error_type='sem'
+    for index, full_df in enumerate(dfs): 
+        max_y = [0,0,0]
+        ylabel=labels[index] +'\n(Ca$^{2+}$ events)'
+        max_y[0] = plot_condition_experience(full_df, 'hit', experience_level,
+            strategy, ax=ax[index, 0], ylabel=ylabel,
+            error_type=error_type,areas=areas,depths=depths,depth=depth)
+        max_y[1] = plot_condition_experience(full_df, 'hit_censored', experience_level,
+            strategy, ax=ax[index, 1],ylabel='',
+            error_type=error_type,areas=areas,depths=depths,depth=depth)
+        max_y[2] = plot_condition_experience(full_df, 'hit_delay_censored', experience_level,
+            strategy, ax=ax[index, 2],ylabel='',
+            error_type=error_type,areas=areas,depths=depths,depth=depth)    
+        if ylims is None:
+            ax[index,0].set_ylim(top = 1.05*np.max(max_y))
+        else:
+            ax[index,0].set_ylim(top = ylims[index])
+    for x in [0,1,2]:
+            ax[x,0].set_xlabel('hit (s)',fontsize=16)
+            ax[x,1].set_xlabel('reward censored (s)',fontsize=16)
+            ax[x,2].set_xlabel('reward + 65ms delay (s)',fontsize=16)
+
+    # Clean up
+    plt.tight_layout()
+    if savefig:
+        if meso:
+            filename = PSTH_DIR + data + '/population_averages/'+\
+                'figure_4_comparisons_psth_meso_rewards_'+experience_level+'.svg'        
+        else:
+            filename = PSTH_DIR + data + '/population_averages/'+\
+                'figure_4_comparisons_psth_rewards_'+experience_level+'.svg' 
+        print('Figure saved to: '+filename)
+        plt.savefig(filename)
+
 
 def plot_figure_4_averages(dfs,data='filtered_events',savefig=False,\
     areas=['VISp','VISl'],depths=['upper','lower'],experience_level='Familiar',

@@ -576,7 +576,9 @@ def get_full_average(session, averages, full_df, condition):
         # Filter by condition, censor rewards, then average
         temp = full_df.query(condition[1]).copy()
         temp['before_reward'] = temp['time'] < temp['reward_latency']
-        x = temp.query('before_reward').groupby('time')['response'].mean()      
+        x_raw = temp.query('before_reward').groupby('time')['response'].mean()      
+        x[0:len(x_raw)] = x_raw
+        
     elif condition[0] == 'hit_delay_censored':
         # Ensure conditional average is the same length
         t = np.sort(full_df['time'].unique())
@@ -586,7 +588,8 @@ def get_full_average(session, averages, full_df, condition):
         # Filter by condition, censor rewards, then average
         temp = full_df.query(condition[1]).copy()
         temp['before_reward'] = temp['time'] < (temp['reward_latency'] +0.065)
-        x = temp.query('before_reward').groupby('time')['response'].mean()    
+        x_raw = temp.query('before_reward').groupby('time')['response'].mean()    
+        x[0:len(x_raw)] = x_raw
     else:
         x = full_df.query(condition[1]).groupby('time')['response'].mean()
 
