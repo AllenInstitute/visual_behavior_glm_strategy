@@ -242,6 +242,10 @@ def build_behavior_df_experiment(session,first=False,second=False,image=False):
             row = summary_df.set_index('behavior_session_id').loc[bsid]
             averages['experience_level'] = row['experience_level']
             averages['visual_strategy_session'] = row['visual_strategy_session']
+            averages['mouse_id'] = session.metadata['mouse_id']
+            averages['behavior_session_id'] = session.metadata['behavior_session_id']   
+            averages['cre_line'] = session.metadata['cre_line']
+
      
             # Save
             ophys_experiment_id = session.metadata['ophys_experiment_id']
