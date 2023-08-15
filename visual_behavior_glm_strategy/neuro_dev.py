@@ -316,4 +316,10 @@ psth.plot_figure_4_averages_cell_selection(dfs, data='events',
 psth.plot_figure_4_averages_cell_selection(dfs, data='events',
     strategy='strategy_labels_with_mixed')
 
+## Updates to reviews
+################################################################################
+dfs = psth.get_figure_4_psth(data='events',mesoscope_only=True)
+ylims = psth.plot_figure_4_averages(dfs, data='events',meso=True)
+psth.plot_figure_4_averages_licking(dfs, data='events',meso=True, ylims=ylims)
+psth.plot_figure_4_averages_reward(dfs, data='events',meso=True, ylims=ylims)
 
