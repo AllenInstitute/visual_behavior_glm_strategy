@@ -304,7 +304,10 @@ def plot_figure_4_averages_licking(dfs,data='filtered_events',savefig=False,\
     error_type='sem'
     for index, full_df in enumerate(dfs): 
         max_y = [0,0,0]
-        ylabel=labels[index] +'\n(Ca$^{2+}$ events)'
+        if data in ['events','filtered_events']:
+            ylabel=labels[index] +'\n(Ca$^{2+}$ events)'
+        else:
+            ylabel=labels[index] + '\n({})'.format(data)
         max_y[0] = plot_condition_experience(full_df, 'licked', experience_level,
             strategy, ax=ax[index, 0], ylabel=ylabel,
             error_type=error_type,areas=areas,depths=depths,depth=depth)
@@ -323,12 +326,22 @@ def plot_figure_4_averages_licking(dfs,data='filtered_events',savefig=False,\
             ax[x,1].set_xlabel('false alarm (s)',fontsize=16)
             ax[x,2].set_xlabel('correct reject (s)',fontsize=16)
 
+    if data == 'running_zscore':
+        for a in ax:
+            for b in a:
+               b.set_ylim(-1.75,1)
+    elif data == 'pupil_zscore':
+        for a in ax:
+            for b in a:
+               b.set_ylim(-.5,.5)
+
+
     # Clean up
     plt.tight_layout()
     if savefig:
         if meso:
             filename = PSTH_DIR + data + '/population_averages/'+\
-                'figure_4_comparisons_psth_meso_licking_'+experience_level+'.svg'        
+                'figure_4_comparisons_psth_meso_licking_'+experience_level+'.png'        
         else:
             filename = PSTH_DIR + data + '/population_averages/'+\
                 'figure_4_comparisons_psth_licking_'+experience_level+'.svg' 
@@ -368,19 +381,21 @@ def plot_figure_4_averages_reward(dfs,data='filtered_events',savefig=False,\
     if savefig:
         if meso:
             filename = PSTH_DIR + data + '/population_averages/'+\
-                'figure_4_comparisons_psth_meso_rewards_'+experience_level+'.svg'        
+                'figure_4_comparisons_psth_meso_rewards_'+experience_level+'.png'        
         else:
             filename = PSTH_DIR + data + '/population_averages/'+\
                 'figure_4_comparisons_psth_rewards_'+experience_level+'.svg' 
         print('Figure saved to: '+filename)
         plt.savefig(filename)
 
-def plot_figure_4_behavioral(dfs, data='pupil'):
+def plot_figure_4_behavioral(dfs, data='pupil',savefig=False,meso=True):
     for df in dfs:
         df['targeted_structure'] = 'behavior'
         df['layer'] = 'behavior' 
-    ylims = plot_figure_4_averages(dfs, data=data, areas=['behavior'],depths=['behavior'])
-    plot_figure_4_averages_licking(dfs,data=data,areas=['behavior'],depths=['behavior'],ylims=ylims)
+    ylims = plot_figure_4_averages(dfs, data=data, areas=['behavior'],depths=['behavior'],
+        meso=meso,savefig=savefig)
+    plot_figure_4_averages_licking(dfs,data=data,areas=['behavior'],depths=['behavior'],
+        ylims=ylims,meso=meso,savefig=savefig)
 
 def plot_figure_4_averages(dfs,data='filtered_events',savefig=False,\
     areas=['VISp','VISl'],depths=['upper','lower'],experience_level='Familiar',
@@ -392,7 +407,10 @@ def plot_figure_4_averages(dfs,data='filtered_events',savefig=False,\
     ylims = [0,0,0]
     for index, full_df in enumerate(dfs): 
         max_y = [0,0,0]
-        ylabel=labels[index] +'\n(Ca$^{2+}$ events)'
+        if data in ['events','filtered_events']:
+            ylabel=labels[index] +'\n(Ca$^{2+}$ events)'
+        else:
+            ylabel=labels[index] +'\n({})'.format(data)
         max_y[0] = plot_condition_experience(full_df, 'omission', experience_level,
             strategy, ax=ax[index, 0], ylabel=ylabel,
             error_type=error_type,areas=areas,depths=depths,depth=depth)
@@ -409,12 +427,21 @@ def plot_figure_4_averages(dfs,data='filtered_events',savefig=False,\
             ax[x,1].set_xlabel('time from hit (s)',fontsize=16)
             ax[x,2].set_xlabel('time from miss (s)',fontsize=16)
 
+    if data == 'running_zscore':
+        for a in ax:
+            for b in a:
+               b.set_ylim(-1.75,1)
+    elif data == 'pupil_zscore':
+        for a in ax:
+            for b in a:
+               b.set_ylim(-.5,.5)
+
     # Clean up
     plt.tight_layout()
     if savefig:
         if meso:
             filename = PSTH_DIR + data + '/population_averages/'+\
-                'figure_4_comparisons_psth_meso_'+experience_level+'.svg'        
+                'figure_4_comparisons_psth_meso_'+experience_level+'.png'        
         else:
             filename = PSTH_DIR + data + '/population_averages/'+\
                 'figure_4_comparisons_psth_'+experience_level+'.svg' 

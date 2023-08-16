@@ -229,7 +229,8 @@ def build_behavior_df_experiment(session,first=False,second=False,image=False):
                 full_df = get_running_etr(session, time=[-2,2])
                 full_df = full_df.rename(columns={'speed':'response'})
             elif data == 'running_zscore':
-                session.running_speed['zscore'] = stats.zscore(session.running_speed['speed'])
+                session.running_speed['zscore'] = \
+                    stats.zscore(session.running_speed['speed'],nan_policy='omit')
                 full_df = get_running_etr(session, time=[-2,2],val='zscore')
                 full_df = full_df.rename(columns={'zscore':'response'})
             elif data == 'pupil':
@@ -237,7 +238,7 @@ def build_behavior_df_experiment(session,first=False,second=False,image=False):
                 full_df = full_df.rename(columns={'pupil_width':'response'})
             elif data == 'pupil_zscore':
                 session.eye_tracking['pupil_zscore'] = \
-                    stats.zscore(session.eye_tracking['pupil_width'])
+                    stats.zscore(session.eye_tracking['pupil_width'],nan_policy='omit')
                 full_df = get_pupil_etr(session, time=[-2,2],val='pupil_zscore')
                 full_df = full_df.rename(columns={'pupil_zscore':'response'})
     

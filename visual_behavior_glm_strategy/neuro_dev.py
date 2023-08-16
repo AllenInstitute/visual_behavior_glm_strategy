@@ -325,6 +325,9 @@ ylims = psth.plot_figure_4_averages(dfs, data='events',meso=True)
 psth.plot_figure_4_averages_licking(dfs, data='events',meso=True, ylims=ylims)
 psth.plot_figure_4_averages_reward(dfs, data='events',meso=True, ylims=ylims)
 
+# bd.build_population_df(...)
 dfs_running = psth.get_figure_4_behavioral('running')
 psth.plot_figure_4_behavioral(dfs_running,data='running')
+
+
 
