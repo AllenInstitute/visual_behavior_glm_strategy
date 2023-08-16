@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 from tqdm import tqdm
+from scipy import stats
 
 import mindscope_utilities as m
 import visual_behavior.data_access.loading as loading
@@ -218,17 +219,28 @@ def build_behavior_df_experiment(session,first=False,second=False,image=False):
     # Get summary table
     summary_df = po.get_ophys_summary_table(BEHAVIOR_VERSION) 
 
-    data_types = ['running','pupil']
+    data_types = ['running','pupil','running_zscore','pupil_zscore']
     good = True
     for data in data_types:
         try:
             print('Generating {} dataset'.format(data))
             if data == 'running':
+                
                 full_df = get_running_etr(session, time=[-2,2])
                 full_df = full_df.rename(columns={'speed':'response'})
-            else:
+            elif data == 'running_zscore':
+                session.running_speed['zscore'] = \
+                    stats.zscore(session.running_speed['speed'],nan_policy='omit')
+                full_df = get_running_etr(session, time=[-2,2],val='zscore')
+                full_df = full_df.rename(columns={'zscore':'response'})
+            elif data == 'pupil':
                 full_df = get_pupil_etr(session, time=[-2,2])
                 full_df = full_df.rename(columns={'pupil_width':'response'})
+            elif data == 'pupil_zscore':
+                session.eye_tracking['pupil_zscore'] = \
+                    stats.zscore(session.eye_tracking['pupil_width'],nan_policy='omit')
+                full_df = get_pupil_etr(session, time=[-2,2],val='pupil_zscore')
+                full_df = full_df.rename(columns={'pupil_zscore':'response'})
     
             full_df = pd.merge(full_df, session.behavior_df, 
                 on='stimulus_presentations_id')
@@ -401,11 +413,11 @@ def get_cell_df(session, cell_specimen_id, data='filtered_events'):
     return df
 
 
-def get_running_etr(session, time=[0.05,.8]):
+def get_running_etr(session, time=[0.05,.8],val='speed'):
     etr = m.event_triggered_response(
         data = session.running_speed,
         t='timestamps',
-        y='speed',
+        y=val,
         event_times = session.stimulus_presentations.start_time,
         t_start = time[0],
         t_end = time[1],
@@ -415,11 +427,11 @@ def get_running_etr(session, time=[0.05,.8]):
     return etr
 
 
-def get_pupil_etr(session, time=[0.05,.8]):
+def get_pupil_etr(session, time=[0.05,.8],val='pupil_width'):
     etr = m.event_triggered_response(
         data = session.eye_tracking,
         t='timestamps',
-        y='pupil_width',
+        y=val,
         event_times = session.stimulus_presentations.start_time,
         t_start = time[0],
         t_end = time[1],
