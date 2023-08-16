@@ -65,7 +65,6 @@ def build_population_df(summary_df,df_type='image_df',cre='Vip-IRES-Cre',
         Generates the summary data files by aggregating over ophys experiment
     '''
 
-
     batch_size=50
     batch=False
     if df_type=='image_df' and cre=='Slc17a7-IRES2-Cre':
@@ -78,6 +77,10 @@ def build_population_df(summary_df,df_type='image_df',cre='Vip-IRES-Cre',
     summary_df = summary_df.query('cre_line == @cre')
     summary_df = summary_df.query('experience_level == @experience_level')
     oeids = np.concatenate(summary_df['ophys_experiment_id'].values) 
+    if data in ['running','pupil']:
+        temp = summary_df.drop_duplicates(subset='behavior_session_id').copy()
+        temp['ophys_experiment_id'] = [x[0] for x in temp['ophys_experiment_id']]
+        oeids = temp['ophys_experiment_id'].values
 
     # make list of columns to drop for space
     cols_to_drop = [
@@ -243,6 +246,10 @@ def build_behavior_df_experiment(session,first=False,second=False,image=False):
             row = summary_df.set_index('behavior_session_id').loc[bsid]
             averages['experience_level'] = row['experience_level']
             averages['visual_strategy_session'] = row['visual_strategy_session']
+            averages['mouse_id'] = session.metadata['mouse_id']
+            averages['behavior_session_id'] = session.metadata['behavior_session_id']   
+            averages['cre_line'] = session.metadata['cre_line']
+
      
             # Save
             ophys_experiment_id = session.metadata['ophys_experiment_id']
@@ -281,6 +288,7 @@ def build_response_df_experiment(session,data,first=False,second=False,image=Fal
     # loop over cells 
     cell_specimen_ids = session.cell_specimen_table.index.values
     print('Iterating over cells for this experiment to build image by image dataframes')
+    print('version 2')
     image_dfs = []
     for index, cell_id in tqdm(enumerate(cell_specimen_ids),
         total=len(cell_specimen_ids),desc='Iterating Cells'):
@@ -567,6 +575,27 @@ def get_full_average(session, averages, full_df, condition):
     # Get conditional average
     if condition[1]=='':
         x = full_df.groupby('time')['response'].mean()
+    elif condition[0] == 'hit_censored':
+        # Ensure conditional average is the same length
+        x = full_df.query('is_change & rewarded').groupby('time')['response'].mean()
+        x.loc[:] = 0
+        
+        # Filter by condition, censor rewards, then average
+        temp = full_df.query(condition[1]).copy()
+        temp['before_reward'] = temp['time'] < temp['reward_latency']
+        x_raw = temp.query('before_reward').groupby('time')['response'].mean()      
+        x.loc[x_raw.index] = x_raw
+        
+    elif condition[0] == 'hit_delay_censored':
+        # Ensure conditional average is the same length
+        x = full_df.query('is_change & rewarded').groupby('time')['response'].mean()
+        x.loc[:] = 0
+        
+        # Filter by condition, censor rewards, then average
+        temp = full_df.query(condition[1]).copy()
+        temp['before_reward'] = temp['time'] < (temp['reward_latency'] +0.065)
+        x_raw = temp.query('before_reward').groupby('time')['response'].mean()    
+        x.loc[x_raw.index] = x_raw
     else:
         x = full_df.query(condition[1]).groupby('time')['response'].mean()
 
@@ -597,29 +626,21 @@ def get_conditions():
         'hit':['hit','is_change & rewarded'],
         'miss':['miss','is_change & not rewarded'],
         'licked':['licked','lick_bout_start'],
-        'engaged_v1_image':['engaged_v1_image','(not omitted) & (not is_change) & engagement_v1'],
+        'image_fa':['image_fa','lick_bout_start & not is_change'],
+        'image_cr':['image_cr','not lick_bout_start & not is_change'],
+        'hit_censored':['hit_censored', 'is_change & rewarded'],
+        'hit_delay_censored':['hit_delay_censored', 'is_change & rewarded'],
         'engaged_v2_image':['engaged_v2_image','(not omitted) & (not is_change) & engagement_v2'],
-        'disengaged_v1_image':['disengaged_v1_image','(not omitted) & (not is_change) & (not engagement_v1)'],
         'disengaged_v2_image':['disengaged_v2_image','(not omitted) & (not is_change) & (not engagement_v2)'],
-        'engaged_v1_change':['engaged_v1_change','engagement_v1 & is_change'],
         'engaged_v2_change':['engaged_v2_change','engagement_v2 & is_change'],
-        'disengaged_v1_change':['disengaged_v1_change','(not engagement_v1) & is_change'],
         'disengaged_v2_change':['disengaged_v2_change','(not engagement_v2) & is_change'],
-        'engaged_v1_omission':['engaged_v1_omission','engagement_v1 & omitted'],
         'engaged_v2_omission':['engaged_v2_omission','engagement_v2 & omitted'],
-        'disengaged_v1_omission':['disengaged_v1_omission','(not engagement_v1) & omitted'],
         'disengaged_v2_omission':['disengaged_v2_omission','(not engagement_v2) & omitted'],
-        'engaged_v1_hit':['engaged_v1_hit','engagement_v1 & is_change & rewarded'],
         'engaged_v2_hit':['engaged_v2_hit','engagement_v2 & is_change & rewarded'],
-        'disengaged_v1_hit':['disengaged_v1_hit','(not engagement_v1) & is_change & rewarded'],
         'disengaged_v2_hit':['disengaged_v2_hit','(not engagement_v2) & is_change & rewarded'],
-        'engaged_v1_miss':['engaged_v1_miss','engagement_v1 & is_change & (not rewarded)'],
         'engaged_v2_miss':['engaged_v2_miss','engagement_v2 & is_change & (not rewarded)'],
-        'disengaged_v1_miss':['disengaged_v1_miss','(not engagement_v1) & is_change & (not rewarded)'],
         'disengaged_v2_miss':['disengaged_v2_miss','(not engagement_v2) & is_change & (not rewarded)'],       
-        'engaged_v1_licked':['engaged_v1_licked','engagement_v1 & lick_bout_start'],
         'engaged_v2_licked':['engaged_v2_licked','engagement_v2 & lick_bout_start'],
-        'disengaged_v1_licked':['disengaged_v1_licked','(not engagement_v1) & lick_bout_start'],
         'disengaged_v2_licked':['disengaged_v2_licked','(not engagement_v2) & lick_bout_start'],       
     }
     return conditions

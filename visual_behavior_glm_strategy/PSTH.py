@@ -218,6 +218,39 @@ def plot_condition(dfs, condition,labels=None,savefig=False,error_type='sem',
 
     return ax
 
+def get_figure_4_behavioral(data='running',experience_level="Familiar",mesoscope_only=True):
+    # Load each cell type
+    vip_full_filtered = bd.load_population_df(data,'full_df',\
+    'Vip-IRES-Cre',experience_level=experience_level)
+    sst_full_filtered = bd.load_population_df(data,'full_df',\
+    'Sst-IRES-Cre',experience_level=experience_level)
+    exc_full_filtered = bd.load_population_df(data,'full_df',\
+        'Slc17a7-IRES2-Cre',experience_level=experience_level)
+
+    if mesoscope_only:
+        experiment_table = glm_params.get_experiment_table().reset_index()
+        vip_full_filtered = pd.merge(vip_full_filtered,
+            experiment_table[['behavior_session_id','equipment_name']],
+            on='behavior_session_id')
+        vip_full_filtered = vip_full_filtered.query('equipment_name == "MESO.1"').copy()
+        sst_full_filtered = pd.merge(sst_full_filtered,
+            experiment_table[['behavior_session_id','equipment_name']],
+            on='behavior_session_id')
+        sst_full_filtered = sst_full_filtered.query('equipment_name == "MESO.1"').copy()
+        exc_full_filtered = pd.merge(exc_full_filtered,
+            experiment_table[['behavior_session_id','equipment_name']],
+            on='behavior_session_id')
+        exc_full_filtered = exc_full_filtered.query('equipment_name == "MESO.1"').copy()
+
+    # merge cell types
+    dfs_filtered = [exc_full_filtered, sst_full_filtered, vip_full_filtered]
+    labels =['Excitatory','Sst Inhibitory','Vip Inhibitory']
+
+    return dfs_filtered
+
+
+
+
 def get_figure_4_psth(data='events',experience_level='Familiar',mesoscope_only=False):
  
     # Load each cell type
@@ -262,6 +295,93 @@ def get_figure_4_psth(data='events',experience_level='Familiar',mesoscope_only=F
     return dfs_filtered
 
 
+def plot_figure_4_averages_licking(dfs,data='filtered_events',savefig=False,\
+    areas=['VISp','VISl'],depths=['upper','lower'],experience_level='Familiar',
+    strategy = 'visual_strategy_session',depth='layer',meso=False,ylims = None):
+
+    fig, ax = plt.subplots(3,3,figsize=(10,7.75),sharey='row',squeeze=False) 
+    labels=['Excitatory','Sst Inhibitory','Vip Inhibitory']
+    error_type='sem'
+    for index, full_df in enumerate(dfs): 
+        max_y = [0,0,0]
+        ylabel=labels[index] +'\n(Ca$^{2+}$ events)'
+        max_y[0] = plot_condition_experience(full_df, 'licked', experience_level,
+            strategy, ax=ax[index, 0], ylabel=ylabel,
+            error_type=error_type,areas=areas,depths=depths,depth=depth)
+        max_y[1] = plot_condition_experience(full_df, 'image_fa', experience_level,
+            strategy, ax=ax[index, 1],ylabel='',
+            error_type=error_type,areas=areas,depths=depths,depth=depth)
+        max_y[2] = plot_condition_experience(full_df, 'image_cr', experience_level,
+            strategy, ax=ax[index, 2],ylabel='',
+            error_type=error_type,areas=areas,depths=depths,depth=depth)    
+        if ylims is None:
+            ax[index,0].set_ylim(top = 1.05*np.max(max_y))
+        else:
+            ax[index,0].set_ylim(top = ylims[index])
+    for x in [0,1,2]:
+            ax[x,0].set_xlabel('lick bout start (s)',fontsize=16)
+            ax[x,1].set_xlabel('false alarm (s)',fontsize=16)
+            ax[x,2].set_xlabel('correct reject (s)',fontsize=16)
+
+    # Clean up
+    plt.tight_layout()
+    if savefig:
+        if meso:
+            filename = PSTH_DIR + data + '/population_averages/'+\
+                'figure_4_comparisons_psth_meso_licking_'+experience_level+'.svg'        
+        else:
+            filename = PSTH_DIR + data + '/population_averages/'+\
+                'figure_4_comparisons_psth_licking_'+experience_level+'.svg' 
+        print('Figure saved to: '+filename)
+        plt.savefig(filename)
+
+def plot_figure_4_averages_reward(dfs,data='filtered_events',savefig=False,\
+    areas=['VISp','VISl'],depths=['upper','lower'],experience_level='Familiar',
+    strategy = 'visual_strategy_session',depth='layer',meso=False,ylims = None):
+
+    fig, ax = plt.subplots(3,3,figsize=(10,7.75),sharey='row',squeeze=False) 
+    labels=['Excitatory','Sst Inhibitory','Vip Inhibitory']
+    error_type='sem'
+    for index, full_df in enumerate(dfs): 
+        max_y = [0,0,0]
+        ylabel=labels[index] +'\n(Ca$^{2+}$ events)'
+        max_y[0] = plot_condition_experience(full_df, 'hit', experience_level,
+            strategy, ax=ax[index, 0], ylabel=ylabel,
+            error_type=error_type,areas=areas,depths=depths,depth=depth)
+        max_y[1] = plot_condition_experience(full_df, 'hit_censored', experience_level,
+            strategy, ax=ax[index, 1],ylabel='',
+            error_type=error_type,areas=areas,depths=depths,depth=depth)
+        max_y[2] = plot_condition_experience(full_df, 'hit_delay_censored', experience_level,
+            strategy, ax=ax[index, 2],ylabel='',
+            error_type=error_type,areas=areas,depths=depths,depth=depth)    
+        if ylims is None:
+            ax[index,0].set_ylim(top = 1.05*np.max(max_y))
+        else:
+            ax[index,0].set_ylim(top = ylims[index])
+    for x in [0,1,2]:
+            ax[x,0].set_xlabel('hit (s)',fontsize=16)
+            ax[x,1].set_xlabel('reward censored (s)',fontsize=16)
+            ax[x,2].set_xlabel('reward + 65ms delay (s)',fontsize=16)
+
+    # Clean up
+    plt.tight_layout()
+    if savefig:
+        if meso:
+            filename = PSTH_DIR + data + '/population_averages/'+\
+                'figure_4_comparisons_psth_meso_rewards_'+experience_level+'.svg'        
+        else:
+            filename = PSTH_DIR + data + '/population_averages/'+\
+                'figure_4_comparisons_psth_rewards_'+experience_level+'.svg' 
+        print('Figure saved to: '+filename)
+        plt.savefig(filename)
+
+def plot_figure_4_behavioral(dfs, data='pupil'):
+    for df in dfs:
+        df['targeted_structure'] = 'behavior'
+        df['layer'] = 'behavior' 
+    ylims = plot_figure_4_averages(dfs, data=data, areas=['behavior'],depths=['behavior'])
+    plot_figure_4_averages_licking(dfs,data=data,areas=['behavior'],depths=['behavior'],ylims=ylims)
+
 def plot_figure_4_averages(dfs,data='filtered_events',savefig=False,\
     areas=['VISp','VISl'],depths=['upper','lower'],experience_level='Familiar',
     strategy = 'visual_strategy_session',depth='layer',meso=False):
@@ -269,6 +389,7 @@ def plot_figure_4_averages(dfs,data='filtered_events',savefig=False,\
     fig, ax = plt.subplots(3,3,figsize=(10,7.75),sharey='row',squeeze=False) 
     labels=['Excitatory','Sst Inhibitory','Vip Inhibitory']
     error_type='sem'
+    ylims = [0,0,0]
     for index, full_df in enumerate(dfs): 
         max_y = [0,0,0]
         ylabel=labels[index] +'\n(Ca$^{2+}$ events)'
@@ -282,6 +403,7 @@ def plot_figure_4_averages(dfs,data='filtered_events',savefig=False,\
             strategy, ax=ax[index, 2],ylabel='',
             error_type=error_type,areas=areas,depths=depths,depth=depth)
         ax[index,0].set_ylim(top = 1.05*np.max(max_y))
+        ylims[index] = 1.05*np.max(max_y)
     for x in [0,1,2]:
             ax[x,0].set_xlabel('time from omission (s)',fontsize=16)
             ax[x,1].set_xlabel('time from hit (s)',fontsize=16)
@@ -298,6 +420,7 @@ def plot_figure_4_averages(dfs,data='filtered_events',savefig=False,\
                 'figure_4_comparisons_psth_'+experience_level+'.svg' 
         print('Figure saved to: '+filename)
         plt.savefig(filename)
+    return ylims
 
 def add_cell_selection_labels(dfs, summary_df):
     for i in [0,1,2]:

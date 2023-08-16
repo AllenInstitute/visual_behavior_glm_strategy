@@ -1,4 +1,4 @@
-import visual_behavior_glm.build_dataframes as bd
+import visual_behavior_glm_strategy.build_dataframes as bd
 
 import argparse
 

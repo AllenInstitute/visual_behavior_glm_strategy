@@ -99,6 +99,8 @@ bd.build_behavior_df_experiment(session)
 bd.build_population_df(summary_df,'full_df','Vip-IRES-Cre','filtered_events')
 bd.build_population_df(summary_df,'full_df','Vip-IRES-Cre','events')
 bd.build_population_df(summary_df,'full_df','Vip-IRES-Cre','dff')
+bd.build_population_df(summary_df,'full_df','Vip-IRES-Cre','running')
+bd.build_population_df(summary_df,'full_df','Vip-IRES-Cre','pupil')
 
 # load finished dataframes
 vip_image_filtered = bd.load_population_df('filtered_events','image_df','Vip-IRES-Cre')
@@ -316,4 +318,13 @@ psth.plot_figure_4_averages_cell_selection(dfs, data='events',
 psth.plot_figure_4_averages_cell_selection(dfs, data='events',
     strategy='strategy_labels_with_mixed')
 
+## Updates to reviews
+################################################################################
+dfs = psth.get_figure_4_psth(data='events',mesoscope_only=True)
+ylims = psth.plot_figure_4_averages(dfs, data='events',meso=True)
+psth.plot_figure_4_averages_licking(dfs, data='events',meso=True, ylims=ylims)
+psth.plot_figure_4_averages_reward(dfs, data='events',meso=True, ylims=ylims)
+
+dfs_running = psth.get_figure_4_behavioral('running')
+psth.plot_figure_4_behavioral(dfs_running,data='running')
 
