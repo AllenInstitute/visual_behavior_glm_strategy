@@ -78,7 +78,7 @@ def build_population_df(summary_df,df_type='image_df',cre='Vip-IRES-Cre',
     summary_df = summary_df.query('cre_line == @cre')
     summary_df = summary_df.query('experience_level == @experience_level')
     oeids = np.concatenate(summary_df['ophys_experiment_id'].values) 
-    if data in ['running','pupil']:
+    if data in ['running','pupil','licks','running_zscore','pupil_zscore']:
         temp = summary_df.drop_duplicates(subset='behavior_session_id').copy()
         temp['ophys_experiment_id'] = [x[0] for x in temp['ophys_experiment_id']]
         oeids = temp['ophys_experiment_id'].values
@@ -219,7 +219,7 @@ def build_behavior_df_experiment(session,first=False,second=False,image=False):
     # Get summary table
     summary_df = po.get_ophys_summary_table(BEHAVIOR_VERSION) 
 
-    data_types = ['running','pupil','running_zscore','pupil_zscore']
+    data_types = ['running','pupil','running_zscore','pupil_zscore','licks']
     good = True
     for data in data_types:
         try:
@@ -241,6 +241,9 @@ def build_behavior_df_experiment(session,first=False,second=False,image=False):
                     stats.zscore(session.eye_tracking['pupil_width'],nan_policy='omit')
                 full_df = get_pupil_etr(session, time=[-2,2],val='pupil_zscore')
                 full_df = full_df.rename(columns={'pupil_zscore':'response'})
+            elif data == 'licks':
+                full_df = get_licking_etr(session, time = [-2,2])
+                full_df = full_df.rename(columns={'licks':'response'})           
     
             full_df = pd.merge(full_df, session.behavior_df, 
                 on='stimulus_presentations_id')
@@ -412,6 +415,24 @@ def get_cell_df(session, cell_specimen_id, data='filtered_events'):
     df['response'] = traces
     return df
 
+def get_licking_etr(session, time=[0.05,.8]):
+    # bin spikes into bins
+    bins = np.arange(0,5000,.05)-0.025
+    hist = np.histogram(session.licks['timestamps'].values, bins=bins)
+    licks = pd.DataFrame({'timestamps':np.arange(0,5000,0.05)[:-1],'licks':hist[0]})
+
+    # convert into rate
+    etr = m.event_triggered_response(
+        data = licks,
+        t='timestamps',
+        y='licks',
+        event_times = session.stimulus_presentations.start_time,
+        t_start = time[0],
+        t_end = time[1],
+        output_sampling_rate=30,
+        interpolate=True
+        )
+    return etr
 
 def get_running_etr(session, time=[0.05,.8],val='speed'):
     etr = m.event_triggered_response(
