@@ -335,14 +335,6 @@ def plot_figure_4_averages_licking(dfs,data='filtered_events',savefig=False,\
         print('Figure saved to: '+filename)
         plt.savefig(filename)
 
-def process_temp(dfs):
-    time = dfs[0].query('condition == "hit"').iloc[0]['time']
-    for df in dfs:
-        df['response'] = [np.pad(x,(0,121-len(x)), 'constant',constant_values=0)
-            for x in df['response'].values]
-        df['time'] = [time if len(x) != 121 else x for x in df['time']]
-    return dfs
-
 def plot_figure_4_averages_reward(dfs,data='filtered_events',savefig=False,\
     areas=['VISp','VISl'],depths=['upper','lower'],experience_level='Familiar',
     strategy = 'visual_strategy_session',depth='layer',meso=False,ylims = None):
