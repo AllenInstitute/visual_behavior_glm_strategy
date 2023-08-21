@@ -326,8 +326,14 @@ psth.plot_figure_4_averages_licking(dfs, data='events',meso=True, ylims=ylims)
 psth.plot_figure_4_averages_reward(dfs, data='events',meso=True, ylims=ylims)
 
 # bd.build_population_df(...)
-dfs_running = psth.get_figure_4_behavioral('running')
-psth.plot_figure_4_behavioral(dfs_running,data='running')
+dfs_zrunning = psth.get_figure_4_behavioral('running_zscore')
+psth.plot_figure_4_behavioral(dfs_zrunning,data='running_zscore')
+dfs_zpupil = psth.get_figure_4_behavioral('pupil_zscore')
+psth.plot_figure_4_behavioral(dfs_zpupil,data='pupil_zscore')
+dfs_licks = psth.get_figure_4_behavioral('licks')
+psth.plot_figure_4_behavioral(dfs_licks,data='licks')
 
+psth.plot_figure_4_averages(dfs, data='events',meso=True,areas=['VISp']) 
+psth.plot_figure_4_averages(dfs, data='events',meso=True,areas=['VISl']) 
 
 
