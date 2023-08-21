@@ -665,6 +665,7 @@ def plot_condition_experience(full_df, condition, experience_level, split,
         ax.set_title(experience_level,fontsize=16)
     ax.set_ylim(bottom=0)
     ax.set_xlim(timestamps[0],timestamps[-1])
+    #ax.set_xlim(-1.5,1.5)
     ax.spines['right'].set_visible(False)
     ax.spines['top'].set_visible(False)
     ax.xaxis.set_tick_params(labelsize=12)
