@@ -215,6 +215,24 @@ def build_behavior_df_experiment(session,first=False,second=False,image=False):
 
     # get session level behavior metrics
     load_behavior_summary(session)
+    
+    # limit running and pupil to within stimulus times, this impacts z-scoring
+    stim_start = session.stimulus_presentations.iloc[0]['start_time']
+    stim_end = session.stimulus_presentations.iloc[-1]['start_time']+.75
+    session.running_speed['outside'] = (session.running_speed['timestamps'] < stim_start) | \
+        (session.running_speed['timestamps'] > stim_end)
+    session.running_speed.drop(
+        index=session.running_speed.query('outside').index.values,
+        inplace=True
+        )
+    session.running_speed.drop(columns='outside',inplace=True)
+    session.eye_tracking['outside'] = (session.eye_tracking['timestamps'] < stim_start) | \
+        (session.eye_tracking['timestamps'] > stim_end)
+    session.eye_tracking.drop(
+        index=session.eye_tracking.query('outside').index.values,
+        inplace=True
+        )
+    session.eye_tracking.drop(columns='outside',inplace=True)
 
     # Get summary table
     summary_df = po.get_ophys_summary_table(BEHAVIOR_VERSION) 
@@ -422,6 +440,7 @@ def get_licking_etr(session, time=[0.05,.8]):
     licks = pd.DataFrame({'timestamps':np.arange(0,5000,0.05)[:-1],'licks':hist[0]})
 
     # convert into rate
+    sampling_rate = 10
     etr = m.event_triggered_response(
         data = licks,
         t='timestamps',
@@ -429,9 +448,12 @@ def get_licking_etr(session, time=[0.05,.8]):
         event_times = session.stimulus_presentations.start_time,
         t_start = time[0],
         t_end = time[1],
-        output_sampling_rate=30,
+        output_sampling_rate=sampling_rate,
         interpolate=True
         )
+    
+    # convert into licks/second
+    etr['licks'] = etr['licks']*sampling_rate
     return etr
 
 def get_running_etr(session, time=[0.05,.8],val='speed'):
