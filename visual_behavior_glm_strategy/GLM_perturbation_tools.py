@@ -589,7 +589,12 @@ def plot_PSTH_perturbation(dfs,labels,condition,run_params=None,savefig=False,
         'ro',zorder=11,ms=8)
         ax.plot(traces['timing_'+x][p1], traces['timing_'+y][p1],
         'ro',zorder=11,ms=8)
-    if condition in ['omission','hit','miss']: 
+    elif condition == 'image_fa':
+        ax.plot(traces['visual_'+x][p1], traces['visual_'+y][p1],
+        'ro',zorder=11,ms=8)
+        ax.plot(traces['timing_'+x][p1], traces['timing_'+y][p1],
+        'ro',zorder=11,ms=8)
+    if condition in ['omission','hit','miss','image_fa']: 
         ax.plot(traces['visual_'+x][p2], traces['visual_'+y][p2],
         'ko',zorder=10,ms=8)
         ax.plot(traces['timing_'+x][p2], traces['timing_'+y][p2],
@@ -630,6 +635,9 @@ def plot_PSTH_perturbation(dfs,labels,condition,run_params=None,savefig=False,
         if condition in ['hit']:
             ax.set_xlim( 0,0.01)
             ax.set_ylim(-.035,0.05)
+        if condition in ['image_fa']:
+            ax.set_xlim( 0,0.01)
+            ax.set_ylim(-.035,0.05)
         if condition in ['omission']:
             ax.set_xlim( 0,0.0045)
             ax.set_xlim( 0,0.01)
@@ -641,7 +649,7 @@ def plot_PSTH_perturbation(dfs,labels,condition,run_params=None,savefig=False,
 
     else:
         if (x=='Exc'):
-            if condition in ['hit','miss']:
+            if condition in ['hit','miss','image_fa']:
                 ax.set_xlim(0,.0135)
             if condition in ['image','omission']:
                 ax.set_xlim( 0,0.0135)
@@ -657,7 +665,10 @@ def plot_PSTH_perturbation(dfs,labels,condition,run_params=None,savefig=False,
 
     ax.axhline(0,color='k',linestyle='--',alpha=.25)
     ax.axvline(0,color='k',linestyle='--',alpha=.25)
-    ax.set_title(condition,fontsize=16)
+    clean_condition = condition
+    if clean_condition == 'image_fa':
+        clean_condition = ' false alarm'
+    ax.set_title(clean_condition,fontsize=16)
     if savefig:
         if meso:
             extra = '_meso'
@@ -715,7 +726,10 @@ def plot_PSTH_2D(dfs,labels, condition, strategy, run_params,
     psth.plot_flashes_on_trace(ax, time, 
         change=change, omitted=omitted)
     ax.set_xlabel('time from {} (s)'.format(condition),fontsize=16)
-    ax.set_ylabel(condition+' response\n(Ca$^{2+}$ events)',
+    clean_condition = condition
+    if clean_condition == 'image_fa':
+        clean_condition = 'false alarm'
+    ax.set_ylabel(clean_condition+' response\n(Ca$^{2+}$ events)',
         fontsize=16)
     ax.set_ylim(0,.064)
     ax.set_xlim(time[0],time[-1])
@@ -732,9 +746,11 @@ def plot_PSTH_2D(dfs,labels, condition, strategy, run_params,
         ax.plot(0,0,'ro',zorder=10,clip_on=False,ms=8)
     elif condition == 'miss':
         ax.plot(0,0,'ro',zorder=10,clip_on=False,ms=8)
+    elif condition == 'image_fa':
+        ax.plot(0,0,'ro',zorder=10,clip_on=False,ms=8)
     else:
         ax.plot(0,0,'ko',zorder=10,clip_on=False,ms=8)
-    if condition in ['omission','hit','miss']:
+    if condition in ['omission','hit','miss','image_fa']:
         ax.plot(.75,0,'ko',zorder=10,clip_on=False,ms=8)
         ax.plot(1.5,0,'o',color='gray',zorder=10,clip_on=False,ms=8)
 

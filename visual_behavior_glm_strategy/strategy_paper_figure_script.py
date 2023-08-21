@@ -109,12 +109,14 @@ gpt.PSTH_analysis(dfs,  'image',run_params,meso=True)
 gpt.PSTH_analysis(dfs,  'omission',run_params,meso=True)
 gpt.PSTH_analysis(dfs,  'hit',run_params,meso=True)
 gpt.PSTH_analysis(dfs,  'miss',run_params,meso=True)
+gpt.PSTH_analysis(dfs,  'image_fa',run_params,meso=True)
 
 # Plot state space plots
 gpt.plot_PSTH_perturbation(dfs,labels,'image',run_params,meso=True,savefig=True)
 gpt.plot_PSTH_perturbation(dfs,labels,'omission',run_params,meso=True,savefig=True)
 gpt.plot_PSTH_perturbation(dfs,labels,'hit',run_params,meso=True,savefig=True)
 gpt.plot_PSTH_perturbation(dfs,labels,'miss',run_params,meso=True,savefig=True)
+gpt.plot_PSTH_perturbation(dfs,labels,'image_fa',run_params,meso=True,savefig=True)
 
 # Plot 3D state space plots
 gpt.plot_PSTH_3D(dfs,labels,'image',run_params,meso=True,savefig=True)
