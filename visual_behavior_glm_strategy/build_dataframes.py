@@ -435,11 +435,12 @@ def get_cell_df(session, cell_specimen_id, data='filtered_events'):
 
 def get_licking_etr(session, time=[0.05,.8]):
     # bin spikes into bins
-    bins = np.arange(0,5000,.05)-0.025
+    binning_dt = 0.05
+    bins = np.arange(0,5000,binning_dt)-binning_dt/2
     hist = np.histogram(session.licks['timestamps'].values, bins=bins)
     licks = pd.DataFrame({
-        'timestamps':np.arange(0,5000,0.05)[:-1],
-        'licks':hist[0] * (1/0.05),
+        'timestamps':np.arange(0,5000,binning_dt)[:-1],
+        'licks':hist[0] * (1/binning_dt),
         })
 
     # convert into rate
@@ -455,8 +456,6 @@ def get_licking_etr(session, time=[0.05,.8]):
         interpolate=True
         )
     
-    # convert into licks/second
-    #etr['licks'] = etr['licks']*sampling_rate
     return etr
 
 def get_running_etr(session, time=[0.05,.8],val='speed'):
