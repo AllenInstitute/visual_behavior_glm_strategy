@@ -246,10 +246,10 @@ def get_figure_4_behavioral(data='running',experience_level="Familiar",mesoscope
     dfs_filtered = [exc_full_filtered, sst_full_filtered, vip_full_filtered]
     labels =['Excitatory','Sst Inhibitory','Vip Inhibitory']
 
-    if data == 'licks':
-        print('adjusting licks into licks/second')
-        for df in dfs_filtered:
-            df['response'] = [x*30 for x in df['response']]
+    #if data == 'licks':
+    #    print('adjusting licks into licks/second')
+    #    for df in dfs_filtered:
+    #        df['response'] = [x*30 for x in df['response']]
 
     return dfs_filtered
 
@@ -313,6 +313,10 @@ def plot_figure_4_averages_licking(dfs,data='filtered_events',savefig=False,\
             ylabel=labels[index] +'\n(Ca$^{2+}$ events)'
         elif data == 'licks':
             ylabel=labels[index] + '\n(licks/s)'
+        elif data == 'running_zscore':
+            ylabel=labels[index] + '\n running (z-score)'
+        elif data == 'pupil_zscore':
+            ylabel=labels[index] + '\n pupil width (z-score)'
         else:
             ylabel=labels[index] + '\n({})'.format(data)
         max_y[0] = plot_condition_experience(full_df, 'licked', experience_level,
@@ -418,6 +422,10 @@ def plot_figure_4_averages(dfs,data='filtered_events',savefig=False,\
             ylabel=labels[index] +'\n(Ca$^{2+}$ events)'
         elif data == 'licks':
             ylabel=labels[index] +'\n(licks/s)'
+        elif data == 'running_zscore':
+            ylabel=labels[index] + '\n running (z-score)'
+        elif data == 'pupil_zscore':
+            ylabel=labels[index] + '\n pupil (z-score)'
         else:
             ylabel=labels[index] +'\n({})'.format(data)
         max_y[0] = plot_condition_experience(full_df, 'omission', experience_level,
