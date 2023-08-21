@@ -437,10 +437,13 @@ def get_licking_etr(session, time=[0.05,.8]):
     # bin spikes into bins
     bins = np.arange(0,5000,.05)-0.025
     hist = np.histogram(session.licks['timestamps'].values, bins=bins)
-    licks = pd.DataFrame({'timestamps':np.arange(0,5000,0.05)[:-1],'licks':hist[0]})
+    licks = pd.DataFrame({
+        'timestamps':np.arange(0,5000,0.05)[:-1],
+        'licks':hist[0] * (1/0.05),
+        })
 
     # convert into rate
-    sampling_rate = 10
+    sampling_rate = 20
     etr = m.event_triggered_response(
         data = licks,
         t='timestamps',
@@ -453,7 +456,7 @@ def get_licking_etr(session, time=[0.05,.8]):
         )
     
     # convert into licks/second
-    etr['licks'] = etr['licks']*sampling_rate
+    #etr['licks'] = etr['licks']*sampling_rate
     return etr
 
 def get_running_etr(session, time=[0.05,.8],val='speed'):
