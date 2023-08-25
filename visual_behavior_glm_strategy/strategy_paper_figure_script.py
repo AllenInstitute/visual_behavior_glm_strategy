@@ -207,4 +207,11 @@ dfs_novel = psth.get_figure_4_psth(data='events',
 psth.plot_figure_4_averages(dfs_novel, data='events',
     experience_level='Novel 1',meso=True)
 
+## Supplement - reward censored PSTHs 
+################################################################################
+dfs = psth.get_figure_4_psth(data='events',mesoscope_only=True)
+ylims = psth.plot_figure_4_averages(dfs, data='events',meso=True)
+psth.plot_figure_4_averages_reward(dfs, data='events',meso=True, ylims=ylims)
+
+
 

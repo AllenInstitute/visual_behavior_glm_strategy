@@ -363,7 +363,7 @@ def plot_figure_4_averages_reward(dfs,data='filtered_events',savefig=False,\
     areas=['VISp','VISl'],depths=['upper','lower'],experience_level='Familiar',
     strategy = 'visual_strategy_session',depth='layer',meso=False,ylims = None):
 
-    fig, ax = plt.subplots(3,3,figsize=(10,7.75),sharey='row',squeeze=False) 
+    fig, ax = plt.subplots(3,2,figsize=(6.66,7.75),sharey='row',squeeze=False) 
     labels=['Excitatory','Sst Inhibitory','Vip Inhibitory']
     error_type='sem'
     for index, full_df in enumerate(dfs): 
@@ -375,24 +375,22 @@ def plot_figure_4_averages_reward(dfs,data='filtered_events',savefig=False,\
         max_y[1] = plot_condition_experience(full_df, 'hit_censored', experience_level,
             strategy, ax=ax[index, 1],ylabel='',
             error_type=error_type,areas=areas,depths=depths,depth=depth)
-        max_y[2] = plot_condition_experience(full_df, 'hit_delay_censored', experience_level,
-            strategy, ax=ax[index, 2],ylabel='',
-            error_type=error_type,areas=areas,depths=depths,depth=depth)    
         if ylims is None:
             ax[index,0].set_ylim(top = 1.05*np.max(max_y))
         else:
             ax[index,0].set_ylim(top = ylims[index])
     for x in [0,1,2]:
-            ax[x,0].set_xlabel('hit (s)',fontsize=16)
-            ax[x,1].set_xlabel('reward censored (s)',fontsize=16)
-            ax[x,2].set_xlabel('reward + 65ms delay (s)',fontsize=16)
+            ax[x,0].set_xlabel('time from hit (s)',fontsize=16)
+            ax[x,1].set_xlabel('time from hit (s)',fontsize=16)
+    ax[0,0].set_title('all activity',fontsize=16)
+    ax[0,1].set_title('reward censored', fontsize=16)
 
     # Clean up
     plt.tight_layout()
     if savefig:
         if meso:
             filename = PSTH_DIR + data + '/population_averages/'+\
-                'figure_4_comparisons_psth_meso_rewards_'+experience_level+'.png'        
+                'figure_4_comparisons_psth_meso_rewards_'+experience_level+'.svg'        
         else:
             filename = PSTH_DIR + data + '/population_averages/'+\
                 'figure_4_comparisons_psth_rewards_'+experience_level+'.svg' 
@@ -679,7 +677,7 @@ def plot_split(df, ax,color,error_type = 'sem',lw=2):
     x = np.vstack(df['response'].values)
     time =df['time'].mean()
     response = np.nanmean(x,axis=0)
-    ax.plot(time,response,color=color,linewidth=lw)
+
  
     # plot uncertainty
     if error_type == 'sem':
@@ -690,7 +688,10 @@ def plot_split(df, ax,color,error_type = 'sem',lw=2):
     
     upper = response + sem
     lower = response - sem
-    ax.fill_between(time, upper, lower, alpha=0.25, color=color,zorder=-10)
+    good_indicies = sem > 0
+    ax.plot(time[good_indicies],response[good_indicies],color=color,linewidth=lw)
+    ax.fill_between(time[good_indicies], upper[good_indicies], lower[good_indicies], 
+        alpha=0.25, color=color,zorder=-10)
 
     return np.nanmax(upper)
 
