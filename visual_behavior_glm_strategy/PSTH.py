@@ -408,12 +408,14 @@ def plot_figure_4_behavioral(dfs, data='pupil',savefig=False,meso=True):
 
 def plot_figure_4_averages(dfs,data='filtered_events',savefig=False,\
     areas=['VISp','VISl'],depths=['upper','lower'],experience_level='Familiar',
-    strategy = 'visual_strategy_session',depth='layer',meso=False):
+    strategy = 'visual_strategy_session',depth='layer',meso=False,in_ylims=None):
 
     fig, ax = plt.subplots(3,3,figsize=(10,7.75),sharey='row',squeeze=False) 
     labels=['Excitatory','Sst Inhibitory','Vip Inhibitory']
     error_type='sem'
-    ylims = [0,0,0]
+    ylims = in_ylims
+    if ylims is None:
+        ylims = [0,0,0]
     for index, full_df in enumerate(dfs): 
         max_y = [0,0,0]
         if data in ['events','filtered_events']:
@@ -435,8 +437,12 @@ def plot_figure_4_averages(dfs,data='filtered_events',savefig=False,\
         max_y[2] = plot_condition_experience(full_df, 'miss', experience_level,
             strategy, ax=ax[index, 2],ylabel='',
             error_type=error_type,areas=areas,depths=depths,depth=depth)
-        ax[index,0].set_ylim(top = 1.05*np.max(max_y))
-        ylims[index] = 1.05*np.max(max_y)
+        if in_ylims is None:
+            ax[index,0].set_ylim(top = 1.05*np.max(max_y))
+            ylims[index] = 1.05*np.max(max_y)
+        else:
+            ax[index,0].set_ylim(top = ylims[index])
+
     for x in [0,1,2]:
             ax[x,0].set_xlabel('time from omission (s)',fontsize=16)
             ax[x,1].set_xlabel('time from hit (s)',fontsize=16)
@@ -454,9 +460,11 @@ def plot_figure_4_averages(dfs,data='filtered_events',savefig=False,\
     # Clean up
     plt.tight_layout()
     if savefig:
+        if ('VISp' not in areas) | ('VISl' not in areas):
+            experience_level = experience_level +'_'+'_'.join(areas)
         if meso:
             filename = PSTH_DIR + data + '/population_averages/'+\
-                'figure_4_comparisons_psth_meso_'+experience_level+'.png'        
+                'figure_4_comparisons_psth_meso_'+experience_level+'.svg'        
         else:
             filename = PSTH_DIR + data + '/population_averages/'+\
                 'figure_4_comparisons_psth_'+experience_level+'.svg' 

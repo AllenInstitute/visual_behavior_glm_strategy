@@ -213,5 +213,12 @@ dfs = psth.get_figure_4_psth(data='events',mesoscope_only=True)
 ylims = psth.plot_figure_4_averages(dfs, data='events',meso=True)
 psth.plot_figure_4_averages_reward(dfs, data='events',meso=True, ylims=ylims)
 
+## Supplement - PSTHs split by area
+################################################################################
+ylims = [.0167,.0923,.0628]  
+psth.plot_figure_4_averages(dfs, data='events',meso=True,areas=['VISp'],in_ylims=ylims) 
+psth.plot_figure_4_averages(dfs, data='events',meso=True,areas=['VISl'],in_ylims=ylims) 
+
+
 
 
