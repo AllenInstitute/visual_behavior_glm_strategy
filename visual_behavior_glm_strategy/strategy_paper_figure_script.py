@@ -72,6 +72,12 @@ psth.plot_summary_bootstrap_strategy_pre_change(vip_image,'vip',first=False,
 # Check multiple comparisons
 tests = psth.bootstrap_summary_multiple_comparisons()
 
+# determine false alarms for exc
+exc_fa = psth.load_false_alarms_df(summary_df, cre='Slc17a7-IRES2-Cre',data='events',
+    first=False, second=False, image=True, meso=True)
+psth.plot_summary_bootstrap_strategy_false_alarms(exc_fa, 'exc',first=False, second=False,
+    image=True, meso=True)
+
 
 ## Fig. 4F - Running VIP control image
 ################################################################################
