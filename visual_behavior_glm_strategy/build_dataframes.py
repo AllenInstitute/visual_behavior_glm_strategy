@@ -531,7 +531,7 @@ def get_image_df(cell_df,run_df, pupil_df, session,cell_specimen_id,data,
     image_df['pre_hit_1'] = image_df['hit'].shift(-1)
 
     # Add image false alarm, and pre-false alarm
-    image_df['image_fa'] = image_df['is_change'] & image_df['lick_bout_start']
+    image_df['image_fa'] = (~image_df['is_change']) & image_df['lick_bout_start']
     image_df['pre_image_fa_1'] = image_df['image_fa'].shift(-1)
     image_df['pre_image_fa_2'] = image_df['image_fa'].shift(-2)
 

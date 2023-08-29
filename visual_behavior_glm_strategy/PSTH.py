@@ -1940,7 +1940,7 @@ def get_summary_bootstrap_strategy_false_alarm(data='events',nboots=10000,cell_t
     else:
         print('file not found')
 
-def plot_summary_bootstrap_omission_strategy(df,cell_type,savefig=False,data='events',
+def plot_summary_bootstrap_strategy_false_alarm(df,cell_type,savefig=False,data='events',
     nboots=10000,first=True, second=False,post=False,meso=False,image=False):
     
     bootstrap = get_summary_bootstrap_strategy_false_alarm(data, nboots,cell_type,
@@ -1954,8 +1954,8 @@ def plot_summary_bootstrap_omission_strategy(df,cell_type,savefig=False,data='ev
     means['timing'] = timing_mean
     visual_sem = np.std(bootstrap['visual'])
     timing_sem = np.std(bootstrap['timing'])
-    ax.plot(0, visual_mean,'o',color='darkorange')
-    ax.plot(1,timing_mean,'o',color='blue')
+    ax.plot(0, visual_mean,'o',markerfacecolor='None',markeredgecolor='darkorange')
+    ax.plot(1,timing_mean,'o', markerfacecolor='None',markeredgecolor='blue')
     ax.plot([0,0],[visual_mean-visual_sem,visual_mean+visual_sem],'-',color='darkorange')
     ax.plot([1,1],[timing_mean-timing_sem,timing_mean+timing_sem],'-',color='blue')
 
@@ -3402,8 +3402,11 @@ def load_false_alarm_df(summary_df, cre,data='events',first=False,second=False,m
     # Load everything
     df = bd.load_population_df(data,'image_df',cre,first=first,second=second,image=image)
 
-    # Drop changes and omissions
-    df.drop(df[~df['image_fa']].index,inplace=True)
+    # Get only False Alarms
+    if cre=="Vip-IRES-Cre":
+        df.drop(df[df['pre_image_fa_1']!=True].index,inplace=True) 
+    else:
+        df.drop(df[~df['image_fa']].index,inplace=True)
 
     # drop familiar sessions
     familiar_summary_df = summary_df.query('experience_level == "Familiar"')
