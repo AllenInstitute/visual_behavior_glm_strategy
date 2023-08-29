@@ -1941,19 +1941,28 @@ def get_summary_bootstrap_strategy_false_alarm(data='events',nboots=10000,cell_t
         print('file not found')
 
 def plot_summary_bootstrap_strategy_false_alarm(df,cell_type,savefig=False,data='events',
-    nboots=10000,first=True, second=False,post=False,meso=False,image=False):
+    nboots=10000,first=True, second=False,post=False,meso=False,image=False,ax=None,bootstrap=None):
     
-    bootstrap = get_summary_bootstrap_strategy_false_alarm(data, nboots,cell_type,
-        first,second,meso,image)   
+    if bootstrap is None:
+        bootstrap = get_summary_bootstrap_strategy_false_alarm(data, nboots,cell_type,
+            first,second,meso,image)   
+        bootstrap['visual_fa'] = bootstrap.pop('visual')
+        bootstrap['timing_fa'] = bootstrap.pop('timing')
+    else:
+        bootstrap_fa = get_summary_bootstrap_strategy_false_alarm(data, nboots,cell_type,
+            first,second,meso,image)   
+        bootstrap['visual_fa'] = bootstrap_fa['visual']
+        bootstrap['timing_fa'] = bootstrap_fa['timing']
  
-    fig,ax = plt.subplots(figsize=(2.5,2.75))
+    if ax is None:
+        fig,ax = plt.subplots(figsize=(2.5,2.75))
     visual_mean = df.query('visual_strategy_session')['response'].mean()
     timing_mean = df.query('not visual_strategy_session')['response'].mean()
     means={}
-    means['visual'] = visual_mean
-    means['timing'] = timing_mean
-    visual_sem = np.std(bootstrap['visual'])
-    timing_sem = np.std(bootstrap['timing'])
+    means['visual_fa'] = visual_mean
+    means['timing_fa'] = timing_mean
+    visual_sem = np.std(bootstrap['visual_fa'])
+    timing_sem = np.std(bootstrap['timing_fa'])
     ax.plot(0, visual_mean,'o',markerfacecolor='None',markeredgecolor='darkorange')
     ax.plot(1,timing_mean,'o', markerfacecolor='None',markeredgecolor='blue')
     ax.plot([0,0],[visual_mean-visual_sem,visual_mean+visual_sem],'-',color='darkorange')
@@ -1975,15 +1984,37 @@ def plot_summary_bootstrap_strategy_false_alarm(df,cell_type,savefig=False,data=
     ax.set_xticklabels(['Vis.','Tim.'],fontsize=16)
     ax.set_xlim(-.5,1.5)
     ax.set_ylim(bottom=0)
-    
-    p = bootstrap_significance(bootstrap, 'visual','timing')
-    if (p < 0.05) or(p>.95):
+        
+
+    p_fa = bootstrap_significance(bootstrap, 'visual_fa','timing_fa')
+    if (p_fa < 0.05) or(p_fa>.95):
         ylim = ax.get_ylim()[1]
         plt.plot([0,1],[ylim*1.1,ylim*1.1],'k-')
         plt.plot([0,0],[ylim*1.05,ylim*1.1],'k-')
         plt.plot([1,1],[ylim*1.05,ylim*1.1],'k-')
         plt.plot(0.5,ylim*1.15, 'k*')
         ax.set_ylim(top=ylim*1.2)
+
+    if 'visual_hit' in bootstrap:
+        ylim = ax.get_ylim()[1]
+        p = bootstrap_significance(bootstrap, 'visual_hit','visual_fa')
+        if (p < 0.05) or (p >.95):
+            x1 = -.15
+            x2 = +.15
+            plt.plot([x1,0],[ylim*1.1,ylim*1.1],'k-')
+            plt.plot([x1,x1],[ylim*1.05,ylim*1.1],'k-')
+            plt.plot([0,0],[ylim*1.05,ylim*1.1],'k-')
+            plt.plot(x1/2,ylim*1.15, 'k*')
+            ax.set_ylim(top=ylim*1.2)
+        p = bootstrap_significance(bootstrap, 'visual_miss','visual_fa')
+        if (p < 0.05) or (p >.95):
+            x1 = 0
+            x2 = +.15
+            plt.plot([x2,0],[ylim*1.1,ylim*1.1],'k-')
+            plt.plot([x2,x2],[ylim*1.05,ylim*1.1],'k-')
+            plt.plot([0,0],[ylim*1.05,ylim*1.1],'k-')
+            plt.plot(x2/2,ylim*1.15, 'k*')
+            ax.set_ylim(top=ylim*1.2)
 
     plt.tight_layout()   
 
@@ -2000,7 +2031,9 @@ def plot_summary_bootstrap_strategy_false_alarm(df,cell_type,savefig=False,data=
         filepath = filepath+'.svg'
         print('Figure saved to: '+filepath)
         plt.savefig(filepath)
-    print_bootstrap_summary(means,bootstrap,p)
+    print_bootstrap_summary(means,bootstrap,p_fa,keys=['visual_fa','timing_fa'])
+    #if 'visual_hit' in bootstrap:
+    #    print_bootstrap_summary(means,bootstrap,p,keys=['visual_fa','visual_hit'])
 
 
 
@@ -2323,7 +2356,7 @@ def get_summary_bootstrap_strategy_pre_change(data='events',nboots=10000,cell_ty
         print('file not found')
   
 def plot_summary_bootstrap_strategy_pre_change(df,cell_type,savefig=False,data='events',
-    nboots=10000,first=True, second=False,meso=False):
+    nboots=10000,first=True, second=False,meso=False,return_data=False):
    
     df = df.query('(pre_hit_1 ==1)or(pre_miss_1==1)').copy()
     bootstrap = get_summary_bootstrap_strategy_pre_change(data, nboots,cell_type,
@@ -2376,8 +2409,14 @@ def plot_summary_bootstrap_strategy_pre_change(df,cell_type,savefig=False,data='
     ax.set_xticks([0,1])
     ax.set_xticklabels(['Vis.','Tim.'],fontsize=16)
     ax.set_xlim(-.5,1.5)
+
+
+    if return_data:
+        plt.tight_layout()
+        return ax, bootstrap 
+ 
     ax.set_ylim(bottom=0)
-    
+ 
     p = bootstrap_significance(bootstrap, 'visual_hit','timing_hit')
 
     ylim = ax.get_ylim()[1]
@@ -2482,7 +2521,7 @@ def get_summary_bootstrap_strategy_hit(data='events',nboots=10000,cell_type='exc
         print('file not found')
    
 def plot_summary_bootstrap_strategy_hit(df,cell_type,savefig=False,data='events',
-    nboots=10000,first=True, second=False,image=False,meso=False):
+    nboots=10000,first=True, second=False,image=False,meso=False,return_data=False):
     
     bootstrap = get_summary_bootstrap_strategy_hit(data, nboots,cell_type,
         first,second,image,meso)   
@@ -2536,7 +2575,11 @@ def plot_summary_bootstrap_strategy_hit(df,cell_type,savefig=False,data='events'
     ax.set_xticklabels(['Vis.','Tim.'],fontsize=16)
     ax.set_xlim(-.5,1.5)
     ax.set_ylim(bottom=0)
-    
+
+    if return_data:
+        plt.tight_layout()
+        return ax, bootstrap  
+ 
     p = bootstrap_significance(bootstrap, 'visual_hit','timing_hit')
     if (p < 0.05) or (p >.95):
         ylim = ax.get_ylim()[1]
