@@ -73,6 +73,8 @@ psth.plot_summary_bootstrap_strategy_pre_change(vip_image,'vip',first=False,
 tests = psth.bootstrap_summary_multiple_comparisons()
 
 
+
+
 ## Fig. 4F - Running VIP control image
 ################################################################################
 
@@ -213,5 +215,44 @@ dfs = psth.get_figure_4_psth(data='events',mesoscope_only=True)
 ylims = psth.plot_figure_4_averages(dfs, data='events',meso=True)
 psth.plot_figure_4_averages_reward(dfs, data='events',meso=True, ylims=ylims)
 
+## Supplement - PSTHs split by area
+################################################################################
+ylims = [.0167,.0923,.0628]  
+psth.plot_figure_4_averages(dfs, data='events',meso=True,areas=['VISp'],in_ylims=ylims) 
+psth.plot_figure_4_averages(dfs, data='events',meso=True,areas=['VISl'],in_ylims=ylims) 
 
+## Supplement - False Alarms
+################################################################################
+dfs = psth.get_figure_4_psth(data='events',mesoscope_only=True)
+ylims = psth.plot_figure_4_averages(dfs, data='events',meso=True)
+psth.plot_figure_4_averages_licking(dfs, data='events',meso=True, ylims=ylims)
 
+# determine false alarms for exc
+exc_fa = psth.load_false_alarm_df(summary_df, cre='Slc17a7-IRES2-Cre',data='events',
+    first=False, second=False, image=True, meso=True)
+exc_change = psth.load_change_df(summary_df, cre='Slc17a7-IRES2-Cre',data='events',
+    first=False, second=False, image=True,meso=True)
+ax,bootstrap = psth.plot_summary_bootstrap_strategy_hit(exc_change, 'exc', first=False, second=False,
+    image=True,meso=True,return_data=True)
+psth.plot_summary_bootstrap_strategy_false_alarm(exc_fa, 'exc',first=False, second=False,
+    image=True, meso=True,ax=ax,bootstrap=bootstrap)
+
+# determine false alarms for sst
+sst_fa = psth.load_false_alarm_df(summary_df, cre='Sst-IRES-Cre',data='events',
+    first=False, second=True, image=False, meso=True)
+sst_change = psth.load_change_df(summary_df, cre='Sst-IRES-Cre',data='events',
+   first=False, second=True,meso=True)
+ax,bootstrap = psth.plot_summary_bootstrap_strategy_hit(sst_change,'sst',first=False, second=True,
+    meso=True,return_data=True)
+psth.plot_summary_bootstrap_strategy_false_alarm(sst_fa, 'sst',first=False, second=True,
+    image=False, meso=True,ax=ax,bootstrap=bootstrap)
+
+# determine false alarms for vip
+vip_fa = psth.load_false_alarm_df(summary_df, cre='Vip-IRES-Cre',data='events',
+    first=False, second=True, image=False, meso=True)
+vip_image = psth.load_image_df(summary_df, cre='Vip-IRES-Cre',data='events',
+    first=False, second=True,meso=True)
+ax,bootstrap = psth.plot_summary_bootstrap_strategy_pre_change(vip_image,'vip',first=False, 
+    second=True,meso=True,return_data=True)
+psth.plot_summary_bootstrap_strategy_false_alarm(vip_fa, 'vip',first=False, second=True,
+    image=False, meso=True,ax=ax,bootstrap=bootstrap)

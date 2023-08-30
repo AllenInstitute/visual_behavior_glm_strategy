@@ -304,7 +304,7 @@ def plot_figure_4_averages_licking(dfs,data='filtered_events',savefig=False,\
     areas=['VISp','VISl'],depths=['upper','lower'],experience_level='Familiar',
     strategy = 'visual_strategy_session',depth='layer',meso=False,ylims = None):
 
-    fig, ax = plt.subplots(3,3,figsize=(10,7.75),sharey='row',squeeze=False) 
+    fig, ax = plt.subplots(3,1,figsize=(4.15,7.75),sharey='row',squeeze=False) 
     labels=['Excitatory','Sst Inhibitory','Vip Inhibitory']
     error_type='sem'
     for index, full_df in enumerate(dfs): 
@@ -319,23 +319,23 @@ def plot_figure_4_averages_licking(dfs,data='filtered_events',savefig=False,\
             ylabel=labels[index] + '\n pupil width (z-score)'
         else:
             ylabel=labels[index] + '\n({})'.format(data)
-        max_y[0] = plot_condition_experience(full_df, 'licked', experience_level,
-            strategy, ax=ax[index, 0], ylabel=ylabel,
+        #max_y[0] = plot_condition_experience(full_df, 'licked', experience_level,
+        #    strategy, ax=ax[index, 0], ylabel=ylabel,
+        #    error_type=error_type,areas=areas,depths=depths,depth=depth)
+        max_y[0] = plot_condition_experience(full_df, 'image_fa', experience_level,
+            strategy, ax=ax[index, 0],ylabel=ylabel,
             error_type=error_type,areas=areas,depths=depths,depth=depth)
-        max_y[1] = plot_condition_experience(full_df, 'image_fa', experience_level,
-            strategy, ax=ax[index, 1],ylabel='',
-            error_type=error_type,areas=areas,depths=depths,depth=depth)
-        max_y[2] = plot_condition_experience(full_df, 'image_cr', experience_level,
-            strategy, ax=ax[index, 2],ylabel='',
-            error_type=error_type,areas=areas,depths=depths,depth=depth)    
+        #max_y[2] = plot_condition_experience(full_df, 'image_cr', experience_level,
+        #    strategy, ax=ax[index, 2],ylabel='',
+        #    error_type=error_type,areas=areas,depths=depths,depth=depth)    
         if ylims is None:
             ax[index,0].set_ylim(top = 1.05*np.max(max_y))
         else:
             ax[index,0].set_ylim(top = ylims[index])
     for x in [0,1,2]:
-            ax[x,0].set_xlabel('lick bout start (s)',fontsize=16)
-            ax[x,1].set_xlabel('false alarm (s)',fontsize=16)
-            ax[x,2].set_xlabel('correct reject (s)',fontsize=16)
+        ax[x,0].set_xlabel('time from false alarm (s)',fontsize=16)
+    #        #ax[x,0].set_xlabel('lick bout start (s)',fontsize=16)
+    #        #ax[x,2].set_xlabel('correct reject (s)',fontsize=16)
 
     if data == 'running_zscore':
         for a in ax:
@@ -352,7 +352,7 @@ def plot_figure_4_averages_licking(dfs,data='filtered_events',savefig=False,\
     if savefig:
         if meso:
             filename = PSTH_DIR + data + '/population_averages/'+\
-                'figure_4_comparisons_psth_meso_licking_'+experience_level+'.png'        
+                'figure_4_comparisons_psth_meso_licking_'+experience_level+'.svg'        
         else:
             filename = PSTH_DIR + data + '/population_averages/'+\
                 'figure_4_comparisons_psth_licking_'+experience_level+'.svg' 
@@ -408,12 +408,14 @@ def plot_figure_4_behavioral(dfs, data='pupil',savefig=False,meso=True):
 
 def plot_figure_4_averages(dfs,data='filtered_events',savefig=False,\
     areas=['VISp','VISl'],depths=['upper','lower'],experience_level='Familiar',
-    strategy = 'visual_strategy_session',depth='layer',meso=False):
+    strategy = 'visual_strategy_session',depth='layer',meso=False,in_ylims=None):
 
     fig, ax = plt.subplots(3,3,figsize=(10,7.75),sharey='row',squeeze=False) 
     labels=['Excitatory','Sst Inhibitory','Vip Inhibitory']
     error_type='sem'
-    ylims = [0,0,0]
+    ylims = in_ylims
+    if ylims is None:
+        ylims = [0,0,0]
     for index, full_df in enumerate(dfs): 
         max_y = [0,0,0]
         if data in ['events','filtered_events']:
@@ -435,8 +437,12 @@ def plot_figure_4_averages(dfs,data='filtered_events',savefig=False,\
         max_y[2] = plot_condition_experience(full_df, 'miss', experience_level,
             strategy, ax=ax[index, 2],ylabel='',
             error_type=error_type,areas=areas,depths=depths,depth=depth)
-        ax[index,0].set_ylim(top = 1.05*np.max(max_y))
-        ylims[index] = 1.05*np.max(max_y)
+        if in_ylims is None:
+            ax[index,0].set_ylim(top = 1.05*np.max(max_y))
+            ylims[index] = 1.05*np.max(max_y)
+        else:
+            ax[index,0].set_ylim(top = ylims[index])
+
     for x in [0,1,2]:
             ax[x,0].set_xlabel('time from omission (s)',fontsize=16)
             ax[x,1].set_xlabel('time from hit (s)',fontsize=16)
@@ -454,9 +460,11 @@ def plot_figure_4_averages(dfs,data='filtered_events',savefig=False,\
     # Clean up
     plt.tight_layout()
     if savefig:
+        if ('VISp' not in areas) | ('VISl' not in areas):
+            experience_level = experience_level +'_'+'_'.join(areas)
         if meso:
             filename = PSTH_DIR + data + '/population_averages/'+\
-                'figure_4_comparisons_psth_meso_'+experience_level+'.png'        
+                'figure_4_comparisons_psth_meso_'+experience_level+'.svg'        
         else:
             filename = PSTH_DIR + data + '/population_averages/'+\
                 'figure_4_comparisons_psth_'+experience_level+'.svg' 
@@ -1428,6 +1436,8 @@ def running_responses(df, condition, cre='vip', bootstraps=None, savefig=False,
         bin_width=5        
     elif condition =='image':
         bin_width=5
+    else:
+        bin_width=5
 
     fig, ax = plt.subplots(figsize=(4.5,2.75)) #3.75
 
@@ -1881,6 +1891,165 @@ def plot_summary_bootstrap_image_strategy(df,cell_type,savefig=False,data='event
         plt.savefig(filepath)
     print_bootstrap_summary(means,bootstrap,p)
 
+def compute_summary_bootstrap_strategy_false_alarm(df,data='events',nboots=10000,cell_type='exc',
+    first=True,second=False,image=False,meso=False):
+
+    df['group'] = df['visual_strategy_session'].astype(str)
+    mapper = {
+        'True':'visual',
+        'False':'timing',
+    }
+    df['group'] = [mapper[x] for x in df['group']]
+    bootstrap = hb.bootstrap(df, levels=['group','ophys_experiment_id','cell_specimen_id'],
+        nboots=nboots)
+
+    filepath = PSTH_DIR + data +'/bootstraps/'+cell_type+'_false_alarm_strategy_summary_'+str(nboots)
+    if first:
+        filepath += '_first'
+    if second:
+        filepath += '_second'
+    if meso:
+        filepath += '_meso'
+    if image:
+        filepath += '_image'
+    filepath = filepath+'.feather'
+
+    with open(filepath,'wb') as handle:
+        pickle.dump(bootstrap, handle, protocol=pickle.HIGHEST_PROTOCOL)
+    print('bootstrap saved to {}'.format(filepath)) 
+
+def get_summary_bootstrap_strategy_false_alarm(data='events',nboots=10000,cell_type='exc',
+    first=True,second=False,meso=False,image=False):
+
+    filepath = PSTH_DIR + data +'/bootstraps/'+cell_type\
+        +'_false_alarm_strategy_summary_'+str(nboots)
+    if first:
+        filepath += '_first'
+    if second:
+        filepath += '_second'
+    if meso:
+        filepath += '_meso'
+    if image:
+        filepath += '_image'
+    filepath = filepath+'.feather'
+
+    if os.path.isfile(filepath):
+        # Load this bin
+        with open(filepath,'rb') as handle:
+            this_boot = pickle.load(handle)
+        print('loading from file')
+        return this_boot
+    else:
+        print('file not found')
+
+def plot_summary_bootstrap_strategy_false_alarm(df,cell_type,savefig=False,data='events',
+    nboots=10000,first=True, second=False,post=False,meso=False,image=False,ax=None,bootstrap=None):
+    
+    if bootstrap is None:
+        bootstrap = get_summary_bootstrap_strategy_false_alarm(data, nboots,cell_type,
+            first,second,meso,image)   
+        bootstrap['visual_fa'] = bootstrap.pop('visual')
+        bootstrap['timing_fa'] = bootstrap.pop('timing')
+    else:
+        bootstrap_fa = get_summary_bootstrap_strategy_false_alarm(data, nboots,cell_type,
+            first,second,meso,image)   
+        bootstrap['visual_fa'] = bootstrap_fa['visual']
+        bootstrap['timing_fa'] = bootstrap_fa['timing']
+ 
+    if ax is None:
+        fig,ax = plt.subplots(figsize=(2.5,2.75))
+    visual_mean = df.query('visual_strategy_session')['response'].mean()
+    timing_mean = df.query('not visual_strategy_session')['response'].mean()
+    means={}
+    means['visual_fa'] = visual_mean
+    means['timing_fa'] = timing_mean
+    visual_sem = np.std(bootstrap['visual_fa'])
+    timing_sem = np.std(bootstrap['timing_fa'])
+    ax.plot(0, visual_mean,'o',markerfacecolor='None',markeredgecolor='darkorange')
+    ax.plot(1,timing_mean,'o', markerfacecolor='None',markeredgecolor='blue')
+    ax.plot([0,0],[visual_mean-visual_sem,visual_mean+visual_sem],'-',color='darkorange')
+    ax.plot([1,1],[timing_mean-timing_sem,timing_mean+timing_sem],'-',color='blue')
+
+    mapper={
+        'exc':'Excitatory',
+        'sst':'Sst Inhibitory',
+        'vip':'Vip Inhibitory'
+        }
+    nice_cell =mapper[cell_type] 
+
+    ax.set_ylabel(nice_cell+' \n(avg. Ca$^{2+}$ events)',fontsize=16)
+    ax.spines['right'].set_visible(False)
+    ax.spines['top'].set_visible(False)
+    ax.xaxis.set_tick_params(labelsize=12)
+    ax.yaxis.set_tick_params(labelsize=12)
+    ax.set_xticks([0,1])
+    ax.set_xticklabels(['Vis.','Tim.'],fontsize=16)
+    ax.set_xlim(-.5,1.5)
+    ax.set_ylim(bottom=0)
+        
+
+    p_fa = bootstrap_significance(bootstrap, 'visual_fa','timing_fa')
+    if (p_fa < 0.05) or(p_fa>.95):
+        ylim = ax.get_ylim()[1]
+        plt.plot([0,1],[ylim*1.1,ylim*1.1],'k-')
+        plt.plot([0,0],[ylim*1.05,ylim*1.1],'k-')
+        plt.plot([1,1],[ylim*1.05,ylim*1.1],'k-')
+        plt.plot(0.5,ylim*1.15, 'k*')
+        ax.set_ylim(top=ylim*1.2)
+
+    if 'visual_hit' in bootstrap:
+        ylim = ax.get_ylim()[1]
+        p = bootstrap_significance(bootstrap, 'visual_hit','visual_fa')
+        if (p < 0.05) or (p >.95):
+            x1 = -.15
+            plt.plot([x1,0],[ylim*1.1,ylim*1.1],'k-')
+            plt.plot([x1,x1],[ylim*1.05,ylim*1.1],'k-')
+            plt.plot([0,0],[ylim*1.05,ylim*1.1],'k-')
+            plt.plot(x1/2,ylim*1.15, 'k*')
+            ax.set_ylim(top=ylim*1.2)
+        p = bootstrap_significance(bootstrap, 'visual_miss','visual_fa')
+        if (p < 0.05) or (p >.95):
+            x2 = +.15
+            plt.plot([x2,0],[ylim*1.1,ylim*1.1],'k-')
+            plt.plot([x2,x2],[ylim*1.05,ylim*1.1],'k-')
+            plt.plot([0,0],[ylim*1.05,ylim*1.1],'k-')
+            plt.plot(x2/2,ylim*1.15, 'k*')
+            ax.set_ylim(top=ylim*1.2)
+        p = bootstrap_significance(bootstrap, 'timing_hit','timing_fa')
+        if (p < 0.05) or (p >.95):
+            x1 = 0.85
+            plt.plot([x1,1],[ylim*1.1,ylim*1.1],'k-')
+            plt.plot([x1,x1],[ylim*1.05,ylim*1.1],'k-')
+            plt.plot([1,1],[ylim*1.05,ylim*1.1],'k-')
+            plt.plot(x1+.15/2,ylim*1.15, 'k*')
+            ax.set_ylim(top=ylim*1.2)
+        p = bootstrap_significance(bootstrap, 'timing_miss','timing_fa')
+        if (p < 0.05) or (p >.95):
+            x2 = +1.15
+            plt.plot([x2,1],[ylim*1.1,ylim*1.1],'k-')
+            plt.plot([x2,x2],[ylim*1.05,ylim*1.1],'k-')
+            plt.plot([1,1],[ylim*1.05,ylim*1.1],'k-')
+            plt.plot(1+.15/2,ylim*1.15, 'k*')
+            ax.set_ylim(top=ylim*1.2)
+
+    plt.tight_layout()   
+
+    if savefig:
+        filepath = PSTH_DIR + data +'/summary/'+cell_type+'_false_alarm_strategy_summary_'+str(nboots)
+        if first:
+            filepath += '_first'
+        if second:
+            filepath += '_second'
+        if meso:
+            filepath += '_meso'
+        if image:
+            filepath += '_image'
+        filepath = filepath+'.svg'
+        print('Figure saved to: '+filepath)
+        plt.savefig(filepath)
+    print_bootstrap_summary(means,bootstrap,p_fa,keys=['visual_fa','timing_fa'])
+
+
 
 def compute_summary_bootstrap_omission_strategy(df,data='events',nboots=10000,cell_type='exc',
     first=True,second=False,image=False,post=False,meso=False):
@@ -2201,7 +2370,7 @@ def get_summary_bootstrap_strategy_pre_change(data='events',nboots=10000,cell_ty
         print('file not found')
   
 def plot_summary_bootstrap_strategy_pre_change(df,cell_type,savefig=False,data='events',
-    nboots=10000,first=True, second=False,meso=False):
+    nboots=10000,first=True, second=False,meso=False,return_data=False):
    
     df = df.query('(pre_hit_1 ==1)or(pre_miss_1==1)').copy()
     bootstrap = get_summary_bootstrap_strategy_pre_change(data, nboots,cell_type,
@@ -2254,8 +2423,14 @@ def plot_summary_bootstrap_strategy_pre_change(df,cell_type,savefig=False,data='
     ax.set_xticks([0,1])
     ax.set_xticklabels(['Vis.','Tim.'],fontsize=16)
     ax.set_xlim(-.5,1.5)
+
+
+    if return_data:
+        plt.tight_layout()
+        return ax, bootstrap 
+ 
     ax.set_ylim(bottom=0)
-    
+ 
     p = bootstrap_significance(bootstrap, 'visual_hit','timing_hit')
 
     ylim = ax.get_ylim()[1]
@@ -2360,7 +2535,7 @@ def get_summary_bootstrap_strategy_hit(data='events',nboots=10000,cell_type='exc
         print('file not found')
    
 def plot_summary_bootstrap_strategy_hit(df,cell_type,savefig=False,data='events',
-    nboots=10000,first=True, second=False,image=False,meso=False):
+    nboots=10000,first=True, second=False,image=False,meso=False,return_data=False):
     
     bootstrap = get_summary_bootstrap_strategy_hit(data, nboots,cell_type,
         first,second,image,meso)   
@@ -2414,7 +2589,11 @@ def plot_summary_bootstrap_strategy_hit(df,cell_type,savefig=False,data='events'
     ax.set_xticklabels(['Vis.','Tim.'],fontsize=16)
     ax.set_xlim(-.5,1.5)
     ax.set_ylim(bottom=0)
-    
+
+    if return_data:
+        plt.tight_layout()
+        return ax, bootstrap  
+ 
     p = bootstrap_significance(bootstrap, 'visual_hit','timing_hit')
     if (p < 0.05) or (p >.95):
         ylim = ax.get_ylim()[1]
@@ -3252,6 +3431,39 @@ def load_image_df(summary_df, cre,data='events',first=False,second=False,meso=Fa
 
     # Drop changes and omissions
     df.drop(df[df['is_change'] | df['omitted']].index,inplace=True)
+
+    # drop familiar sessions
+    familiar_summary_df = summary_df.query('experience_level == "Familiar"')
+    familiar_bsid = familiar_summary_df['behavior_session_id'].unique()
+    df.drop(df[~df['behavior_session_id'].isin(familiar_bsid)].index, inplace=True)
+
+    # Add additional details
+    df = pd.merge(df,summary_df[['behavior_session_id','visual_strategy_session']])
+    experiment_table = glm_params.get_experiment_table()
+    df = bd.add_area_depth(df, experiment_table)
+    df = pd.merge(df, experiment_table.reset_index()[['ophys_experiment_id',
+        'binned_depth','equipment_name']],on='ophys_experiment_id')
+
+    # Limit to Mesoscope
+    if meso:
+        df = df.query('equipment_name == "MESO.1"').copy()
+
+    return df
+
+
+def load_false_alarm_df(summary_df, cre,data='events',first=False,second=False,meso=False,image=False):
+    '''
+        This function is optimized for memory conservation
+    '''
+
+    # Load everything
+    df = bd.load_population_df(data,'image_df',cre,first=first,second=second,image=image)
+
+    # Get only False Alarms
+    if cre=="Vip-IRES-Cre":
+        df.drop(df[df['pre_image_fa_1']!=True].index,inplace=True) 
+    else:
+        df.drop(df[~df['image_fa']].index,inplace=True)
 
     # drop familiar sessions
     familiar_summary_df = summary_df.query('experience_level == "Familiar"')
