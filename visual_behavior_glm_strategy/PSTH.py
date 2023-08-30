@@ -1086,6 +1086,8 @@ def compute_pre_change_running_bootstrap_bin(df, condition, cell_type, strategy,
         bin_width=5        
     elif condition =='image':
         bin_width=5   
+    else:
+        bin_width=5
 
     # Filter to strategy
     if strategy == 'visual':
@@ -1140,6 +1142,7 @@ def compute_pre_change_running_bootstrap_bin(df, condition, cell_type, strategy,
         'pre_hit_mean':pre_hit_mean,
         'pre_miss_mean':pre_miss_mean,
         'n_boots':nboots,
+        'means':means
         }
 
     # Save to file
@@ -1152,13 +1155,15 @@ def compute_pre_change_running_bootstrap_bin(df, condition, cell_type, strategy,
 
 
 def compute_pre_change_running_bootstrap(df,condition,cell_type,strategy,
-    nboots=10000,data='events',compute=True,split='pre_hit_1'):
+    nboots=10000,data='events',compute=False):
     
     # set up running bins
     if condition =='omission':
         bin_width=5        
     elif condition =='image':
-        bin_width=5#2  
+        bin_width=5
+    else:
+        bin_width=5 
 
     # Set up data
     if strategy == 'visual':
@@ -1230,6 +1235,121 @@ def compute_pre_change_running_bootstrap(df,condition,cell_type,strategy,
 
     # Save file
     if not missing:
+        filepath = get_hierarchy_filename(cell_type,condition,data,'all',nboots,
+            ['visual_strategy_session'],'running_pre_change_{}'.format(strategy))
+        print('saving bootstraps to: '+filepath)
+        bootstraps.to_feather(filepath)
+    return bootstraps
+
+def compute_pre_change_running_bootstrap_compare_strategy(df,condition,cell_type,
+    nboots=10000,data='events',compute=False):
+    
+    # set up running bins
+    if condition =='omission':
+        bin_width=5        
+    elif condition =='image':
+        bin_width=5
+    else:
+        bin_width=5 
+
+    # Set up data
+    df = df.query('(pre_hit_1==1)or(pre_miss_1==1)').copy()
+    df['pre_hit_1'] = df['pre_hit_1'].astype(bool) 
+    df['pre_miss_1'] = df['pre_miss_1'].astype(bool) 
+   
+    df['running_bins'] = np.floor(df['running_speed']/bin_width)
+    bins = np.sort(df['running_bins'].unique())
+    bootstraps = [] 
+    for b in bins:
+        visual=False
+        timing=False
+
+        vfilename = get_hierarchy_filename(cell_type,condition,data,'all',nboots,
+            ['visual_strategy_session'],'running_pre_change_{}_{}'.format('visual',int(b))) 
+        if os.path.isfile(vfilename):
+            # Load this bin
+            with open(vfilename,'rb') as handle:
+                this_vboot = pickle.load(handle)
+            print('loading this boot from file: {}'.format(b))
+            visual=True
+        else:
+            print('Missing bin: {} {}, and compute=False'.format('visual',b))
+
+        tfilename = get_hierarchy_filename(cell_type,condition,data,'all',nboots,
+            ['visual_strategy_session'],'running_pre_change_{}_{}'.format('timing',int(b))) 
+        if os.path.isfile(tfilename):
+            # Load this bin
+            with open(tfilename,'rb') as handle:
+                this_tboot = pickle.load(handle)
+            print('loading this boot from file: {}'.format(b))
+            timing=True
+        else:
+            print('Missing bin: {} {}, and compute=False'.format('timing',b))
+    
+        if True:
+            means = {}
+            if visual and timing and (True in this_vboot['means']) & (True in this_tboot['means']):
+                means['visual_hit']  = this_vboot['means'][True]
+                means['timing_hit']  = this_tboot['means'][True]
+                diff = np.array(means['visual_hit']) - np.array(means['timing_hit'])
+                pboot = np.sum(diff<0)/len(diff)
+                visual_pre_hit = np.std(means['visual_hit'])
+                timing_pre_hit = np.std(means['timing_hit'])
+                bootstraps.append({'running_bin':b,'change_type':'hit','p_boot':pboot,
+                    'visual_hit_sem':visual_pre_hit, 'timing_hit_sem':timing_pre_hit,
+                    'n_boots':nboots})
+            elif visual and (True in this_vboot['means']):
+                means['visual_hit']   = this_vboot['means'][True]
+                visual_pre_hit = np.std(means['visual_hit'])
+                timing_pre_hit = 0
+                bootstraps.append({'running_bin':b,'change_type':'hit','p_boot':0.5,
+                    'visual_hit_sem':visual_pre_hit, 'timing_hit_sem':timing_pre_hit,
+                    'n_boots':nboots})               
+            elif timing and (True in this_tboot['means']):
+                means['timing_hit']   = this_tboot['means'][True]
+                timing_pre_hit = np.std(means['timing_hit'])
+                visual_pre_hit = 0
+                bootstraps.append({'running_bin':b,'change_type':'hit','p_boot':0.5,
+                    'visual_hit_sem':visual_pre_hit, 'timing_hit_sem':timing_pre_hit,
+                    'n_boots':nboots})               
+            if visual and timing and(False in this_vboot['means']) & (False in this_tboot['means']):
+                means['visual_miss']  = this_vboot['means'][False]
+                means['timing_miss']  = this_tboot['means'][False]
+                diff = np.array(means['visual_miss']) - np.array(means['timing_miss'])
+                pboot = np.sum(diff<0)/len(diff)
+                visual_pre_miss = np.std(means['visual_miss'])
+                timing_pre_miss = np.std(means['timing_miss'])
+                bootstraps.append({'running_bin':b,'change_type':'miss','p_boot':pboot,
+                    'visual_miss_sem':visual_pre_miss, 'timing_miss_sem':timing_pre_miss,
+                    'n_boots':nboots})
+            elif visual and (False in this_vboot['means']):
+                means['visual_miss']   = this_vboot['means'][False]
+                visual_pre_miss = np.std(means['visual_miss'])
+                timing_pre_miss = 0
+                bootstraps.append({'running_bin':b,'change_type':'miss','p_boot':0.5,
+                    'visual_miss_sem':visual_pre_miss, 'timing_miss_sem':timing_pre_miss,
+                    'n_boots':nboots})               
+            elif timing and (False in this_tboot['means']):
+                means['timing_miss']   = this_tboot['means'][False]
+                timing_pre_miss = np.std(means['timing_miss'])
+                visual_pre_miss = 0
+                bootstraps.append({'running_bin':b,'change_type':'miss','p_boot':0.5,
+                    'visual_miss_sem':visual_pre_miss, 'timing_miss_sem':timing_pre_miss,
+                    'n_boots':nboots})               
+        else:
+            print('missing either visual or timing for bin : {}'.format(b))
+   
+    #return bootstraps 
+    # Convert to dataframe, do multiple comparisons corrections
+    bootstraps = pd.DataFrame(bootstraps)
+    bootstraps['p_boot'] = [1-x if x > .5 else x for x in bootstraps['p_boot']] 
+    bootstraps['ind_significant'] = bootstraps['p_boot'] <= 0.05 
+    bootstraps['location'] = bootstraps['running_bin']
+    bootstraps = add_hochberg_correction(bootstraps)
+    bootstraps = bootstraps.drop(columns=['location'])
+
+    # Save file
+    if False:#not missing:
         filepath = get_hierarchy_filename(cell_type,condition,data,'all',nboots,
             ['visual_strategy_session'],'running_pre_change_{}'.format(strategy))
         print('saving bootstraps to: '+filepath)
@@ -1429,6 +1549,7 @@ def get_pre_change_running_bootstraps(cell_type, condition,data,nboots,strategy)
         return bootstraps
     else:
         print('file not found, compute the running bootstraps first')
+        print(filepath)
 
 def running_responses(df, condition, cre='vip', bootstraps=None, savefig=False,
     data='events', split='visual_strategy_session',meso=False):
@@ -1636,6 +1757,104 @@ def pre_change_running_responses(df, condition, cre='vip', bootstraps=None, save
         print('Figure saved to {}'.format(filename))
         plt.savefig(filename)
 
+def pre_change_running_responses_compare_strategy(df, condition, cre='vip', bootstraps=None, 
+    savefig=False, data='events', change_type='hit'):
+    if condition =='omission':
+        bin_width=5        
+    elif condition =='image':
+        bin_width=5
+    else:
+        bin_width=5
+    min_events=10
+
+    fig, ax = plt.subplots(figsize=(4.5,2.75)) #3.75
+
+    bootstraps = bootstraps.query('change_type==@change_type').copy()
+    if change_type == 'hit':
+        df = df.query('(pre_hit_1==1)').copy()
+        marker='o'
+    elif change_type == 'miss':
+        df = df.query('(pre_miss_1==1)').copy()
+        marker='x'
+    df['running_bins'] = np.floor(df['running_speed']/bin_width)
+
+    summary = df.groupby(['visual_strategy_session','running_bins'])['response'].mean()\
+        .reset_index()
+    df1 = summary.query('visual_strategy_session')
+    df2=  summary.query('not visual_strategy_session')
+   
+    summary_sem = df.groupby(['visual_strategy_session','running_bins'])['response'].sem()\
+        .reset_index()
+    df1_sem = summary_sem.query('visual_strategy_session')
+    df2_sem = summary_sem.query('not visual_strategy_session')
+
+    # Remove running bins with less than 100 responses
+    counts = df.groupby(['running_bins','visual_strategy_session'])\
+        ['response'].count().unstack().reset_index()
+    counts['remove'] = [(row[False]<min_events)or(row[True]<min_events) for \
+        index, row in counts.iterrows()]
+    counts['running_bin'] = counts['running_bins'].astype(int)
+    if bootstraps is not None:
+        bootstraps = pd.merge(bootstraps, counts[['running_bin','remove']],\
+            on='running_bin')
+
+    v_color = 'darkorange'
+    t_color = 'blue'
+    
+    if bootstraps is not None:
+        temp1 = df1.set_index('running_bins')
+        temp2 = df2.set_index('running_bins')
+        bootstraps = bootstraps.set_index('running_bin')
+        bins = set(bootstraps.index.values).intersection(set(temp1.index.values))
+        for b in bins:
+            plt.errorbar(b*bin_width, temp1.loc[b].response,
+                yerr=bootstraps.loc[b]['visual_{}_sem'.format(change_type)],
+                color=v_color,fmt=marker)   
+        bins = set(bootstraps.index.values).intersection(set(temp2.index.values))
+        for b in bins:
+            plt.errorbar(b*bin_width, temp2.loc[b].response,
+                yerr=bootstraps.loc[b]['timing_{}_sem'.format(change_type)],
+                color=t_color,fmt=marker)     
+        plt.plot(df1.running_bins*bin_width, df1.response,marker,
+            color=v_color,label='visual '+change_type)
+        plt.plot(df2.running_bins*bin_width, df2.response,marker,
+            color=t_color,label='timing '+change_type)
+    else:
+        plt.errorbar(df1.running_bins*bin_width, df1.response,
+            yerr=df1_sem.response,color=hit_color,fmt='o',label=hit_label)
+        plt.errorbar(df2.running_bins*bin_width, df2.response,
+            yerr=df2_sem.response,color=mis_color,fmt='x',label=mis_label)
+    ax.set_ylabel(cre.capitalize()+'\n(avg. Ca$^{2+}$ events)',fontsize=16)
+    ax.set_xlabel('running speed (cm/s)',fontsize=16)
+    ax.spines['right'].set_visible(False)
+    ax.spines['top'].set_visible(False)
+    ax.xaxis.set_tick_params(labelsize=12)
+    ax.yaxis.set_tick_params(labelsize=12) 
+
+    ax.set_ylim(0,.04)
+
+    if (bootstraps is not None) and ('bh_significant' in bootstraps.columns):
+        y =  ax.get_ylim()[1]*1.05
+        bootstraps = bootstraps.reset_index()
+        for index, row in bootstraps.iterrows():
+            if row.bh_significant:
+                if row.remove:
+                    print('Not significant b/c of low count: {}'.format(row.running_bin))
+                else:
+                    ax.plot(row.running_bin*bin_width, y, 'k*')  
+        ax.set_ylim(top=y*1.075)
+
+    ax.set_xlim(-1,51)
+    plt.legend()
+
+    plt.tight_layout() 
+
+    # Save fig
+    if savefig:
+        filename = PSTH_DIR + data+'/running/'+\
+            'pre_change_running_{}_familiar_{}.svg'.format(cre,strategy)
+        print('Figure saved to {}'.format(filename))
+        plt.savefig(filename)
 
 
 def engagement_running_responses(df, condition, cre='vip', vis_boots=None, 
