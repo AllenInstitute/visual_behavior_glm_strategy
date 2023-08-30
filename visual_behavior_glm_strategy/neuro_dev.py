@@ -320,10 +320,6 @@ psth.plot_figure_4_averages_cell_selection(dfs, data='events',
 
 ## Updates to reviews
 ################################################################################
-dfs = psth.get_figure_4_psth(data='events',mesoscope_only=True)
-ylims = psth.plot_figure_4_averages(dfs, data='events',meso=True)
-psth.plot_figure_4_averages_licking(dfs, data='events',meso=True, ylims=ylims)
-psth.plot_figure_4_averages_reward(dfs, data='events',meso=True, ylims=ylims)
 
 # bd.build_population_df(...)
 dfs_zrunning = psth.get_figure_4_behavioral('running_zscore')
@@ -332,8 +328,5 @@ dfs_zpupil = psth.get_figure_4_behavioral('pupil_zscore')
 psth.plot_figure_4_behavioral(dfs_zpupil,data='pupil_zscore')
 dfs_licks = psth.get_figure_4_behavioral('licks')
 psth.plot_figure_4_behavioral(dfs_licks,data='licks')
-
-psth.plot_figure_4_averages(dfs, data='events',meso=True,areas=['VISp']) 
-psth.plot_figure_4_averages(dfs, data='events',meso=True,areas=['VISl']) 
 
 

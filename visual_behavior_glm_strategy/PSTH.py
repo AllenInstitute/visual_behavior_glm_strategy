@@ -304,7 +304,7 @@ def plot_figure_4_averages_licking(dfs,data='filtered_events',savefig=False,\
     areas=['VISp','VISl'],depths=['upper','lower'],experience_level='Familiar',
     strategy = 'visual_strategy_session',depth='layer',meso=False,ylims = None):
 
-    fig, ax = plt.subplots(3,3,figsize=(10,7.75),sharey='row',squeeze=False) 
+    fig, ax = plt.subplots(3,1,figsize=(4.15,7.75),sharey='row',squeeze=False) 
     labels=['Excitatory','Sst Inhibitory','Vip Inhibitory']
     error_type='sem'
     for index, full_df in enumerate(dfs): 
@@ -319,23 +319,23 @@ def plot_figure_4_averages_licking(dfs,data='filtered_events',savefig=False,\
             ylabel=labels[index] + '\n pupil width (z-score)'
         else:
             ylabel=labels[index] + '\n({})'.format(data)
-        max_y[0] = plot_condition_experience(full_df, 'licked', experience_level,
-            strategy, ax=ax[index, 0], ylabel=ylabel,
+        #max_y[0] = plot_condition_experience(full_df, 'licked', experience_level,
+        #    strategy, ax=ax[index, 0], ylabel=ylabel,
+        #    error_type=error_type,areas=areas,depths=depths,depth=depth)
+        max_y[0] = plot_condition_experience(full_df, 'image_fa', experience_level,
+            strategy, ax=ax[index, 0],ylabel=ylabel,
             error_type=error_type,areas=areas,depths=depths,depth=depth)
-        max_y[1] = plot_condition_experience(full_df, 'image_fa', experience_level,
-            strategy, ax=ax[index, 1],ylabel='',
-            error_type=error_type,areas=areas,depths=depths,depth=depth)
-        max_y[2] = plot_condition_experience(full_df, 'image_cr', experience_level,
-            strategy, ax=ax[index, 2],ylabel='',
-            error_type=error_type,areas=areas,depths=depths,depth=depth)    
+        #max_y[2] = plot_condition_experience(full_df, 'image_cr', experience_level,
+        #    strategy, ax=ax[index, 2],ylabel='',
+        #    error_type=error_type,areas=areas,depths=depths,depth=depth)    
         if ylims is None:
             ax[index,0].set_ylim(top = 1.05*np.max(max_y))
         else:
             ax[index,0].set_ylim(top = ylims[index])
     for x in [0,1,2]:
-            ax[x,0].set_xlabel('lick bout start (s)',fontsize=16)
-            ax[x,1].set_xlabel('false alarm (s)',fontsize=16)
-            ax[x,2].set_xlabel('correct reject (s)',fontsize=16)
+        ax[x,0].set_xlabel('time from false alarm (s)',fontsize=16)
+    #        #ax[x,0].set_xlabel('lick bout start (s)',fontsize=16)
+    #        #ax[x,2].set_xlabel('correct reject (s)',fontsize=16)
 
     if data == 'running_zscore':
         for a in ax:
@@ -352,7 +352,7 @@ def plot_figure_4_averages_licking(dfs,data='filtered_events',savefig=False,\
     if savefig:
         if meso:
             filename = PSTH_DIR + data + '/population_averages/'+\
-                'figure_4_comparisons_psth_meso_licking_'+experience_level+'.png'        
+                'figure_4_comparisons_psth_meso_licking_'+experience_level+'.svg'        
         else:
             filename = PSTH_DIR + data + '/population_averages/'+\
                 'figure_4_comparisons_psth_licking_'+experience_level+'.svg' 
@@ -1436,6 +1436,8 @@ def running_responses(df, condition, cre='vip', bootstraps=None, savefig=False,
         bin_width=5        
     elif condition =='image':
         bin_width=5
+    else:
+        bin_width=5
 
     fig, ax = plt.subplots(figsize=(4.5,2.75)) #3.75
 
@@ -2000,7 +2002,6 @@ def plot_summary_bootstrap_strategy_false_alarm(df,cell_type,savefig=False,data=
         p = bootstrap_significance(bootstrap, 'visual_hit','visual_fa')
         if (p < 0.05) or (p >.95):
             x1 = -.15
-            x2 = +.15
             plt.plot([x1,0],[ylim*1.1,ylim*1.1],'k-')
             plt.plot([x1,x1],[ylim*1.05,ylim*1.1],'k-')
             plt.plot([0,0],[ylim*1.05,ylim*1.1],'k-')
@@ -2008,12 +2009,27 @@ def plot_summary_bootstrap_strategy_false_alarm(df,cell_type,savefig=False,data=
             ax.set_ylim(top=ylim*1.2)
         p = bootstrap_significance(bootstrap, 'visual_miss','visual_fa')
         if (p < 0.05) or (p >.95):
-            x1 = 0
             x2 = +.15
             plt.plot([x2,0],[ylim*1.1,ylim*1.1],'k-')
             plt.plot([x2,x2],[ylim*1.05,ylim*1.1],'k-')
             plt.plot([0,0],[ylim*1.05,ylim*1.1],'k-')
             plt.plot(x2/2,ylim*1.15, 'k*')
+            ax.set_ylim(top=ylim*1.2)
+        p = bootstrap_significance(bootstrap, 'timing_hit','timing_fa')
+        if (p < 0.05) or (p >.95):
+            x1 = 0.85
+            plt.plot([x1,1],[ylim*1.1,ylim*1.1],'k-')
+            plt.plot([x1,x1],[ylim*1.05,ylim*1.1],'k-')
+            plt.plot([1,1],[ylim*1.05,ylim*1.1],'k-')
+            plt.plot(x1+.15/2,ylim*1.15, 'k*')
+            ax.set_ylim(top=ylim*1.2)
+        p = bootstrap_significance(bootstrap, 'timing_miss','timing_fa')
+        if (p < 0.05) or (p >.95):
+            x2 = +1.15
+            plt.plot([x2,1],[ylim*1.1,ylim*1.1],'k-')
+            plt.plot([x2,x2],[ylim*1.05,ylim*1.1],'k-')
+            plt.plot([1,1],[ylim*1.05,ylim*1.1],'k-')
+            plt.plot(1+.15/2,ylim*1.15, 'k*')
             ax.set_ylim(top=ylim*1.2)
 
     plt.tight_layout()   
@@ -2032,8 +2048,6 @@ def plot_summary_bootstrap_strategy_false_alarm(df,cell_type,savefig=False,data=
         print('Figure saved to: '+filepath)
         plt.savefig(filepath)
     print_bootstrap_summary(means,bootstrap,p_fa,keys=['visual_fa','timing_fa'])
-    #if 'visual_hit' in bootstrap:
-    #    print_bootstrap_summary(means,bootstrap,p,keys=['visual_fa','visual_hit'])
 
 
 
