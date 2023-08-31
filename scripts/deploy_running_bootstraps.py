@@ -55,7 +55,8 @@ def get_bootstrap_jobs():
         #{'cell_type':'vip','response':'image','data':'events','nboots':nboots}, 
         #{'cell_type':'exc','response':'omission','data':'events','nboots':nboots},
         #{'cell_type':'sst','response':'omission','data':'events','nboots':nboots},
-        {'cell_type':'vip','response':'omission','data':'events','nboots':nboots}
+        #{'cell_type':'vip','response':'omission','data':'events','nboots':nboots},
+        {'cell_type':'vip','response':'pre_change','data':'events','nboots':nboots}
         ]
     jobs = []
     for b in range(-5,21):

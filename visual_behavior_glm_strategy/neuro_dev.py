@@ -329,4 +329,22 @@ psth.plot_figure_4_behavioral(dfs_zpupil,data='pupil_zscore')
 dfs_licks = psth.get_figure_4_behavioral('licks')
 psth.plot_figure_4_behavioral(dfs_licks,data='licks')
 
+# running hit/miss prechange
+# First pass, but didn't save means so can't compare visual/timing
+bootstraps_visual = psth.get_pre_change_running_bootstraps('vip','image','events',10000,'visual')
+bootstraps_timing = psth.get_pre_change_running_bootstraps('vip','image','events',10000,'timing')
+psth.pre_change_running_responses(vip_image,'image',strategy='visual_strategy_session',
+    bootstraps=bootstraps_visual)
+psth.pre_change_running_responses(vip_image,'image',strategy='not visual_strategy_session',
+    bootstraps=bootstraps_timing)
+
+# second pass
+bootstraps=psth.compute_pre_change_running_bootstrap_compare_strategy(vip_image,'pre_change','vip')
+psth.pre_change_running_responses_compare_strategy(vip_image,'pre_change',change_type='hit',
+    bootstraps=bootstraps)
+
+
+
+
+
 
