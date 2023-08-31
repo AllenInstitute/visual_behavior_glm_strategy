@@ -1852,7 +1852,7 @@ def pre_change_running_responses_compare_strategy(df, condition, cre='vip', boot
     # Save fig
     if savefig:
         filename = PSTH_DIR + data+'/running/'+\
-            'pre_change_running_{}_familiar_{}.svg'.format(cre,strategy)
+            'pre_change_running_{}_familiar_{}.svg'.format(cre,change_type)
         print('Figure saved to {}'.format(filename))
         plt.savefig(filename)
 
