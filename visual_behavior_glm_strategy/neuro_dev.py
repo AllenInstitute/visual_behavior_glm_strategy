@@ -343,7 +343,7 @@ bootstraps=psth.compute_pre_change_running_bootstrap_compare_strategy(vip_image,
 psth.pre_change_running_responses_compare_strategy(vip_image,'pre_change',change_type='hit',
     bootstraps=bootstraps)
 
-
+multilevel_summary = pd.read_csv('/home/alex.piet/codebase/behavior/PSTH/vip_summary_multilevel_regression.csv')
 
 
 
