@@ -256,3 +256,6 @@ ax,bootstrap = psth.plot_summary_bootstrap_strategy_pre_change(vip_image,'vip',f
     second=True,meso=True,return_data=True)
 psth.plot_summary_bootstrap_strategy_false_alarm(vip_fa, 'vip',first=False, second=True,
     image=False, meso=True,ax=ax,bootstrap=bootstrap)
+
+
+

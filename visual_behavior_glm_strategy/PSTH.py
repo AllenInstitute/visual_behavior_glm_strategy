@@ -1560,7 +1560,7 @@ def running_responses(df, condition, cre='vip', bootstraps=None, savefig=False,
     else:
         bin_width=5
 
-    fig, ax = plt.subplots(figsize=(4.5,2.75)) #3.75
+    fig, ax = plt.subplots(figsize=(4.25,2.75)) #3.75
 
     df['running_bins'] = np.floor(df['running_speed']/bin_width)
 
@@ -1767,7 +1767,7 @@ def pre_change_running_responses_compare_strategy(df, condition, cre='vip', boot
         bin_width=5
     min_events=10
 
-    fig, ax = plt.subplots(figsize=(4.5,2.75)) #3.75
+    fig, ax = plt.subplots(figsize=(4.25,2.75)) #3.75
 
     bootstraps = bootstraps.query('change_type==@change_type').copy()
     if change_type == 'hit':
@@ -1824,7 +1824,7 @@ def pre_change_running_responses_compare_strategy(df, condition, cre='vip', boot
             yerr=df1_sem.response,color=hit_color,fmt='o',label=hit_label)
         plt.errorbar(df2.running_bins*bin_width, df2.response,
             yerr=df2_sem.response,color=mis_color,fmt='x',label=mis_label)
-    ax.set_ylabel(cre.capitalize()+'\n(avg. Ca$^{2+}$ events)',fontsize=16)
+    ax.set_ylabel(cre.capitalize()+' '+change_type+'\n(avg. Ca$^{2+}$ events)',fontsize=16)
     ax.set_xlabel('running speed (cm/s)',fontsize=16)
     ax.spines['right'].set_visible(False)
     ax.spines['top'].set_visible(False)
@@ -4188,3 +4188,6 @@ def bootstrap_summary_multiple_comparisons():
     print(tests.query('not significant').sort_values(by='imq')[cols])
 
     return tests
+
+
+
