@@ -318,33 +318,4 @@ psth.plot_figure_4_averages_cell_selection(dfs, data='events',
 psth.plot_figure_4_averages_cell_selection(dfs, data='events',
     strategy='strategy_labels_with_mixed')
 
-## Updates to reviews
-################################################################################
-
-# bd.build_population_df(...)
-dfs_zrunning = psth.get_figure_4_behavioral('running_zscore')
-psth.plot_figure_4_behavioral(dfs_zrunning,data='running_zscore')
-dfs_zpupil = psth.get_figure_4_behavioral('pupil_zscore')
-psth.plot_figure_4_behavioral(dfs_zpupil,data='pupil_zscore')
-dfs_licks = psth.get_figure_4_behavioral('licks')
-psth.plot_figure_4_behavioral(dfs_licks,data='licks')
-
-# running hit/miss prechange
-# First pass, but didn't save means so can't compare visual/timing
-bootstraps_visual = psth.get_pre_change_running_bootstraps('vip','image','events',10000,'visual')
-bootstraps_timing = psth.get_pre_change_running_bootstraps('vip','image','events',10000,'timing')
-psth.pre_change_running_responses(vip_image,'image',strategy='visual_strategy_session',
-    bootstraps=bootstraps_visual)
-psth.pre_change_running_responses(vip_image,'image',strategy='not visual_strategy_session',
-    bootstraps=bootstraps_timing)
-
-# second pass
-bootstraps=psth.compute_pre_change_running_bootstrap_compare_strategy(vip_image,'pre_change','vip')
-psth.pre_change_running_responses_compare_strategy(vip_image,'pre_change',change_type='hit',
-    bootstraps=bootstraps)
-
-multilevel_summary = pd.read_csv('/home/alex.piet/codebase/behavior/PSTH/vip_summary_multilevel_regression.csv')
-
-
-
 

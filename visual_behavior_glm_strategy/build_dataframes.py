@@ -234,6 +234,13 @@ def build_behavior_df_experiment(session,first=False,second=False,image=False):
         )
     session.eye_tracking.drop(columns='outside',inplace=True)
 
+    session.eye_tracking['pupil_zscore'] = \
+        stats.zscore(session.eye_tracking['pupil_width'],nan_policy='omit')
+    session.eye_tracking['pupil_exclude'] = (session.eye_tracking['pupil_zscore']>2)|\
+        (session.eye_tracking['pupil_zscore'] < -2)
+    session.eye_tracking.at[session.eye_tracking['pupil_exclude'],'pupil_width'] = np.nan
+    session.eye_tracking.drop(columns=['pupil_zscore','pupil_exclude'],inplace=True)
+
     # Get summary table
     summary_df = po.get_ophys_summary_table(BEHAVIOR_VERSION) 
 
