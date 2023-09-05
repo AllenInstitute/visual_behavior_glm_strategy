@@ -73,7 +73,10 @@ psth.plot_summary_bootstrap_strategy_pre_change(vip_image,'vip',first=False,
 tests = psth.bootstrap_summary_multiple_comparisons()
 
 
-
+## Fig. 4F/G/H - Multi-level regression
+################################################################################
+multilevel_summary = \
+    pd.read_csv('/home/alex.piet/codebase/behavior/PSTH/vip_summary_multilevel_regression.csv')
 
 ## Fig. 4F - Running VIP control image
 ################################################################################
@@ -94,6 +97,16 @@ bootstraps_omission = psth.get_running_bootstraps('vip','omission','events',1000
     meso=True)
 psth.running_responses(vip_omission, 'omission',bootstraps=bootstraps_omission,
     meso=True)
+
+## Fig. 4H - Running VIP control hit/miss
+################################################################################
+
+vip_image = psth.load_image_df(summary_df, cre='Vip-IRES-Cre',data='events',
+    meso=True,second=True)
+bootstraps=psth.compute_pre_change_running_bootstrap_compare_strategy(vip_image,
+    'pre_change','vip')
+psth.pre_change_running_responses_compare_strategy(vip_image,'pre_change',change_type='hit',
+    bootstraps=bootstraps)
 
 
 ## Fig 5
@@ -220,6 +233,17 @@ psth.plot_figure_4_averages_reward(dfs, data='events',meso=True, ylims=ylims)
 ylims = [.0167,.0923,.0628]  
 psth.plot_figure_4_averages(dfs, data='events',meso=True,areas=['VISp'],in_ylims=ylims) 
 psth.plot_figure_4_averages(dfs, data='events',meso=True,areas=['VISl'],in_ylims=ylims) 
+
+## Supplement - behavior averages
+################################################################################
+dfs_zrunning = psth.get_figure_4_behavioral('running_zscore')
+psth.plot_figure_4_behavioral(dfs_zrunning,data='running_zscore')
+
+dfs_zpupil = psth.get_figure_4_behavioral('pupil_zscore')
+psth.plot_figure_4_behavioral(dfs_zpupil,data='pupil_zscore')
+
+dfs_licks = psth.get_figure_4_behavioral('licks')
+psth.plot_figure_4_behavioral(dfs_licks,data='licks')
 
 ## Supplement - False Alarms
 ################################################################################

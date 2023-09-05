@@ -229,6 +229,7 @@ def get_figure_4_behavioral(data='running',experience_level="Familiar",mesoscope
 
     if mesoscope_only:
         experiment_table = glm_params.get_experiment_table().reset_index()
+        experiment_table = experiment_table.drop_duplicates(subset='behavior_session_id')
         vip_full_filtered = pd.merge(vip_full_filtered,
             experiment_table[['behavior_session_id','equipment_name']],
             on='behavior_session_id')
@@ -245,11 +246,6 @@ def get_figure_4_behavioral(data='running',experience_level="Familiar",mesoscope
     # merge cell types
     dfs_filtered = [exc_full_filtered, sst_full_filtered, vip_full_filtered]
     labels =['Excitatory','Sst Inhibitory','Vip Inhibitory']
-
-    #if data == 'licks':
-    #    print('adjusting licks into licks/second')
-    #    for df in dfs_filtered:
-    #        df['response'] = [x*30 for x in df['response']]
 
     return dfs_filtered
 
@@ -401,10 +397,83 @@ def plot_figure_4_behavioral(dfs, data='pupil',savefig=False,meso=True):
     for df in dfs:
         df['targeted_structure'] = 'behavior'
         df['layer'] = 'behavior' 
-    ylims = plot_figure_4_averages(dfs, data=data, areas=['behavior'],depths=['behavior'],
+    ylims = plot_figure_4_behavioral_inner(dfs, data=data, areas=['behavior'],depths=['behavior'],
         meso=meso,savefig=savefig)
-    plot_figure_4_averages_licking(dfs,data=data,areas=['behavior'],depths=['behavior'],
-        ylims=ylims,meso=meso,savefig=savefig)
+    #plot_figure_4_averages_licking(dfs,data=data,areas=['behavior'],depths=['behavior'],
+    #    ylims=ylims,meso=meso,savefig=savefig)
+
+def plot_figure_4_behavioral_inner(dfs,data='filtered_events',savefig=False,\
+    areas=['VISp','VISl'],depths=['upper','lower'],experience_level='Familiar',
+    strategy = 'visual_strategy_session',depth='layer',meso=False,in_ylims=None):
+
+    fig, ax = plt.subplots(3,4,figsize=(13,7.75),sharey='row',squeeze=False) 
+    labels=['Excitatory','Sst Inhibitory','Vip Inhibitory']
+    error_type='sem'
+    ylims = in_ylims
+    if ylims is None:
+        ylims = [0,0,0,0]
+    for index, full_df in enumerate(dfs): 
+        max_y = [0,0,0,0]
+        if data in ['events','filtered_events']:
+            ylabel=labels[index] +'\n(Ca$^{2+}$ events)'
+        elif data == 'licks':
+            ylabel=labels[index] +'\n(licks/s)'
+        elif data == 'running_zscore':
+            ylabel=labels[index] + '\n running (z-score)'
+        elif data == 'pupil_zscore':
+            ylabel=labels[index] + '\n pupil (z-score)'
+        else:
+            ylabel=labels[index] +'\n({})'.format(data)
+        max_y[0] = plot_condition_experience(full_df, 'omission', experience_level,
+            strategy, ax=ax[index, 0], ylabel=ylabel,
+            error_type=error_type,areas=areas,depths=depths,depth=depth)
+        max_y[1] = plot_condition_experience(full_df, 'hit', experience_level,
+            strategy, ax=ax[index, 1],ylabel='',
+            error_type=error_type,areas=areas,depths=depths,depth=depth)
+        max_y[2] = plot_condition_experience(full_df, 'miss', experience_level,
+            strategy, ax=ax[index, 2],ylabel='',
+            error_type=error_type,areas=areas,depths=depths,depth=depth)
+        max_y[3] = plot_condition_experience(full_df, 'image_fa', experience_level,
+            strategy, ax=ax[index, 3],ylabel='',
+            error_type=error_type,areas=areas,depths=depths,depth=depth)
+        if in_ylims is None:
+            ax[index,0].set_ylim(top = 1.05*np.max(max_y))
+            ylims[index] = 1.05*np.max(max_y)
+        else:
+            ax[index,0].set_ylim(top = ylims[index])
+
+    for x in [0,1,2]:
+            ax[x,0].set_xlabel('time from omission (s)',fontsize=16)
+            ax[x,1].set_xlabel('time from hit (s)',fontsize=16)
+            ax[x,2].set_xlabel('time from miss (s)',fontsize=16)
+            ax[x,3].set_xlabel('time from false alarm (s)',fontsize=16)
+
+    if data == 'running_zscore':
+        for a in ax:
+            for b in a:
+               b.set_ylim(-1.75,1)
+    elif data == 'pupil_zscore':
+        for a in ax:
+            for b in a:
+               b.set_ylim(-.5,.5)
+
+    # Clean up
+    plt.tight_layout()
+    if savefig:
+        if ('VISp' not in areas) | ('VISl' not in areas):
+            experience_level = experience_level +'_'+'_'.join(areas)
+        if meso:
+            filename = PSTH_DIR + data + '/population_averages/'+\
+                'figure_4_comparisons_psth_meso_'+experience_level+'.svg'        
+        else:
+            filename = PSTH_DIR + data + '/population_averages/'+\
+                'figure_4_comparisons_psth_'+experience_level+'.svg' 
+        print('Figure saved to: '+filename)
+        plt.savefig(filename)
+    return ylims
+
+
+
 
 def plot_figure_4_averages(dfs,data='filtered_events',savefig=False,\
     areas=['VISp','VISl'],depths=['upper','lower'],experience_level='Familiar',
