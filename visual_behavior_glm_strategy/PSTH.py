@@ -455,7 +455,7 @@ def plot_figure_4_behavioral_inner(dfs,data='filtered_events',savefig=False,\
     elif data == 'pupil_zscore':
         for a in ax:
             for b in a:
-               b.set_ylim(-.5,.5)
+               b.set_ylim(-1,1)
 
     # Clean up
     plt.tight_layout()
