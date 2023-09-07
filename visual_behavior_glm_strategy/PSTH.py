@@ -473,9 +473,9 @@ def plot_figure_4_behavioral_inner(dfs,data='filtered_events',savefig=False,\
     return ylims
 
 
-def plot_figure_4_averages_vip_matched(dfs,ylims, savefig=False,experience_level='Familiar',
+def plot_figure_4_averages_vip_matched(dfs=None,ylims=None, savefig=False,experience_level='Familiar',
     meso=True):
-    if ylims is None:
+    if (ylims is None) or (dfs is None):
         dfs = get_figure_4_psth(data='events',mesoscope_only=True)
         ylims = plot_figure_4_averages(dfs, data='events',meso=True) 
 
