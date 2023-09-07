@@ -473,7 +473,47 @@ def plot_figure_4_behavioral_inner(dfs,data='filtered_events',savefig=False,\
     return ylims
 
 
+def plot_figure_4_averages_vip_matched(dfs,ylims, savefig=False,experience_level='Familiar',
+    meso=True):
+    if ylims is None:
+        dfs = get_figure_4_psth(data='events',mesoscope_only=True)
+        ylims = plot_figure_4_averages(dfs, data='events',meso=True) 
 
+    # Vip mouse ids excluding three low running mice
+    mouse_ids = [528097,453991, 435431, 523922, 453989, 438912]
+    full_df = dfs[2].query('mouse_id in @mouse_ids').copy()
+    
+    fig, ax = plt.subplots(1,3,figsize=(10,2.7),sharey='row',
+        squeeze=False) 
+    error_type='sem'
+    areas=['VISp','VISl']
+    depths=['upper','lower']
+    strategy='visual_strategy_session'
+    depth='layer'
+    data='events'
+    ylabel='Vip Inhibitory\n(Ca$^{2+}$ events)'  
+    max_y = [0,0,0]
+    max_y[0] = plot_condition_experience(full_df, 'omission', experience_level,
+        strategy, ax=ax[0,0], ylabel=ylabel,
+        error_type=error_type,areas=areas,depths=depths,depth=depth)
+    max_y[1] = plot_condition_experience(full_df, 'hit', experience_level,
+        strategy, ax=ax[0,1],ylabel='',
+        error_type=error_type,areas=areas,depths=depths,depth=depth)
+    max_y[2] = plot_condition_experience(full_df, 'miss', experience_level,
+        strategy, ax=ax[0,2],ylabel='',
+        error_type=error_type,areas=areas,depths=depths,depth=depth)
+    ax[0,0].set_ylim(top = ylims[2])
+    ax[0,0].set_xlabel('time from omission (s)',fontsize=16)
+    ax[0,1].set_xlabel('time from hit (s)',fontsize=16)
+    ax[0,2].set_xlabel('time from miss (s)',fontsize=16)
+    plt.tight_layout()
+
+    plt.tight_layout()
+    if savefig:
+        filename = PSTH_DIR + data + '/population_averages/'+\
+           'figure_4_comparisons_psth_vip_matched_meso_'+experience_level+'.svg'        
+        print('Figure saved to: '+filename)
+        plt.savefig(filename)
 
 def plot_figure_4_averages(dfs,data='filtered_events',savefig=False,\
     areas=['VISp','VISl'],depths=['upper','lower'],experience_level='Familiar',
