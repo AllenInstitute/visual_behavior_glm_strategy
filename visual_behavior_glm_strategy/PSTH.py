@@ -2607,7 +2607,7 @@ def plot_summary_bootstrap_strategy_pre_change(df,cell_type,savefig=False,data='
    
     df = df.query('(pre_hit_1 ==1)or(pre_miss_1==1)').copy()
     bootstrap = get_summary_bootstrap_strategy_pre_change(data, nboots,cell_type,
-        first,second)   
+        first,second,meso)   
  
     fig,ax = plt.subplots(figsize=(2.5,2.75))
     visual_hit_mean = df.query('(visual_strategy_session)&(pre_hit_1==1)')['response'].mean()
