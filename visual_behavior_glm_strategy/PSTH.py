@@ -1661,7 +1661,7 @@ def get_pre_change_running_bootstraps(cell_type, condition,data,nboots,strategy)
         print(filepath)
 
 def running_responses(df, condition, cre='vip', bootstraps=None, savefig=False,
-    data='events', split='visual_strategy_session',meso=False):
+    data='events', split='visual_strategy_session',meso=False,ax=None):
     if condition =='omission':
         bin_width=5        
     elif condition =='image':
@@ -1669,7 +1669,8 @@ def running_responses(df, condition, cre='vip', bootstraps=None, savefig=False,
     else:
         bin_width=5
 
-    fig, ax = plt.subplots(figsize=(4.25,2.75)) #3.75
+    if ax is None:
+        fig, ax = plt.subplots(figsize=(4.25,2.75)) #3.75
 
     df['running_bins'] = np.floor(df['running_speed']/bin_width)
 
@@ -1767,102 +1768,6 @@ def running_responses(df, condition, cre='vip', bootstraps=None, savefig=False,
         else:
             filename = PSTH_DIR + data+'/running/'+\
                 'running_{}_familiar_{}_{}.svg'.format(cre,condition,split)
-        print('Figure saved to {}'.format(filename))
-        plt.savefig(filename)
-
-def pre_change_running_responses(df, condition, cre='vip', bootstraps=None, savefig=False,
-    data='events', strategy='visual_strategy_session'):
-    if condition =='omission':
-        bin_width=5        
-    elif condition =='image':
-        bin_width=5
-    min_events=10
-
-    fig, ax = plt.subplots(figsize=(3.75,2.75))
-
-    df = df.query(strategy).query('(pre_hit_1==1)or(pre_miss_1==1)').copy()
-    df['running_bins'] = np.floor(df['running_speed']/bin_width)
-
-    split='pre_hit_1'
-    df['pre_hit_1'] = df['pre_hit_1'].astype(bool)
-    summary = df.groupby(['pre_hit_1','running_bins'])['response'].mean()\
-        .reset_index()
-    df1 = summary.query(split)
-    df2=  summary.query('not {}'.format(split))
-   
-    summary_sem = df.groupby([split,'running_bins'])['response'].sem()\
-        .reset_index()
-    df1_sem = summary_sem.query(split)
-    df2_sem = summary_sem.query('not {}'.format(split))
-
-    # Remove running bins with less than 100 responses
-    counts = df.groupby(['running_bins','visual_strategy_session'])\
-        ['response'].count().unstack().reset_index()
-    counts['remove'] = [(row[False]<min_events)or(row[True]<min_events) for \
-        index, row in counts.iterrows()]
-    counts['running_bin'] = counts['running_bins'].astype(int)
-    if bootstraps is not None:
-        bootstraps = pd.merge(bootstraps, counts[['running_bin','remove']],\
-            on='running_bin')
-
-    if strategy == 'visual_strategy_session':
-        hit_color = 'darkorange'
-        mis_color = 'darkorange'
-    else:
-        hit_color = 'blue'
-        mis_color = 'blue'
-    hit_label = 'pre hit'
-    mis_label = 'pre miss'
-    if bootstraps is not None:
-        temp1 = df1.set_index('running_bins')
-        temp2 = df2.set_index('running_bins')
-        bootstraps = bootstraps.set_index('running_bin')
-        bins = set(bootstraps.index.values).intersection(set(temp1.index.values))
-        for b in bins:
-            plt.errorbar(b*bin_width, temp1.loc[b].response,
-                yerr=bootstraps.loc[b]['pre_hit_sem'],color=hit_color,fmt='o')   
-        bins = set(bootstraps.index.values).intersection(set(temp2.index.values))
-        for b in bins:
-            plt.errorbar(b*bin_width, temp2.loc[b].response,
-                yerr=bootstraps.loc[b]['pre_miss_sem'],color=mis_color,fmt='x')     
-        plt.plot(df1.running_bins*bin_width, df1.response,'o',
-            color=hit_color,label=hit_label)
-        plt.plot(df2.running_bins*bin_width, df2.response,'x',
-            color=mis_color,label=mis_label)
-    else:
-        plt.errorbar(df1.running_bins*bin_width, df1.response,
-            yerr=df1_sem.response,color=hit_color,fmt='o',label=hit_label)
-        plt.errorbar(df2.running_bins*bin_width, df2.response,
-            yerr=df2_sem.response,color=mis_color,fmt='x',label=mis_label)
-    ax.set_ylabel(cre.capitalize()+' '+condition+'\n(avg. Ca$^{2+}$ events)',fontsize=16)
-    ax.set_xlabel('running speed (cm/s)',fontsize=16)
-    ax.spines['right'].set_visible(False)
-    ax.spines['top'].set_visible(False)
-    ax.xaxis.set_tick_params(labelsize=12)
-    ax.yaxis.set_tick_params(labelsize=12) 
-
-    ax.set_ylim(0,.04)
-
-    if (bootstraps is not None) and ('bh_significant' in bootstraps.columns):
-        y =  ax.get_ylim()[1]*1.05
-        bootstraps = bootstraps.reset_index()
-        for index, row in bootstraps.iterrows():
-            if row.bh_significant:
-                if row.remove:
-                    print('Not significant b/c of low count: {}'.format(row.running_bin))
-                else:
-                    ax.plot(row.running_bin*bin_width, y, 'k*')  
-        ax.set_ylim(top=y*1.075)
-
-    ax.set_xlim(-1,61)
-    plt.legend()
-
-    plt.tight_layout() 
-
-    # Save fig
-    if savefig:
-        filename = PSTH_DIR + data+'/running/'+\
-            'pre_change_running_{}_familiar_{}.svg'.format(cre,strategy)
         print('Figure saved to {}'.format(filename))
         plt.savefig(filename)
 
@@ -4299,4 +4204,245 @@ def bootstrap_summary_multiple_comparisons():
     return tests
 
 
+def compare_vip_hit_miss_image_by_running(summary_df,bootstraps=False,vip_image=None,
+    errorbars=True,plot_hits=True,plot_misses=True):
+    if vip_image is None:
+        vip_image = load_image_df(summary_df, cre='Vip-IRES-Cre',data='events',
+            meso=True,second=True)
+    if bootstraps:
+        bootstraps=compute_pre_change_running_bootstrap_compare_strategy(vip_image,
+            'pre_change','vip') 
+        bootstraps_image = get_running_bootstraps('vip','image','events',10000,
+            second=True, meso=True)
+    else:
+        bootstraps=None
+        bootstraps_image=None
 
+    strategy='visual_strategy_session'
+    ax = running_responses_strategy(vip_image,'image',bootstraps=bootstraps_image,
+        strategy=strategy,errorbars=errorbars)
+    pre_change_running_responses_strategy(vip_image,'image',savefig=False, ax=ax,
+        strategy=strategy,bootstraps=bootstraps,errorbars=errorbars,
+        plot_hits=plot_hits,plot_misses=plot_misses)
+
+    strategy='not visual_strategy_session'
+    ax = running_responses_strategy(vip_image,'image',bootstraps=bootstraps_image,
+        strategy=strategy,errorbars=errorbars)
+    pre_change_running_responses_strategy(vip_image,'image',savefig=False, ax=ax,
+        strategy=strategy,bootstraps=bootstraps,errorbars=errorbars,
+        plot_hits=plot_hits,plot_misses=plot_misses)
+
+    
+
+def running_responses_strategy(df, condition, cre='vip', bootstraps=None, savefig=False,
+    data='events', strategy='visual_strategy_session',meso=False,ax=None,errorbars=True):
+    if condition =='omission':
+        bin_width=5        
+    elif condition =='image':
+        bin_width=5
+    else:
+        bin_width=5
+
+    if ax is None:
+        fig, ax = plt.subplots(figsize=(4.25,2.75)) #3.75
+
+    # Limit to just one strategy
+    df = df.query(strategy).copy()
+    if strategy=='visual_strategy_session':
+        strategy_label='visual'
+    else:
+        strategy_label='timing'
+
+    df['running_bins'] = np.floor(df['running_speed']/bin_width)
+    summary = df.groupby(['running_bins'])['response'].mean()\
+        .reset_index()
+    summary_sem = df.groupby(['running_bins'])['response'].sem()\
+        .reset_index()
+
+    # Remove running bins with less than 100 responses
+    counts = df.groupby(['running_bins','visual_strategy_session'])\
+        ['response'].count().unstack().reset_index()
+    counts['remove'] = [(row[False]<100)or(row[True]<100) for \
+        index, row in counts.iterrows()]
+    counts['running_bin'] = counts['running_bins'].astype(int)
+    if bootstraps is not None:
+        bootstraps = pd.merge(bootstraps, counts[['running_bin','remove']],\
+            on='running_bin')
+
+    if strategy == "visual_strategy_session":
+        color = 'darkorange'
+        label = 'image'
+
+    else:
+        color = 'blue'
+        label = 'image'
+
+    if bootstraps is not None:
+        temp = summary.set_index('running_bins')
+        bootstraps = bootstraps.set_index('running_bin')
+        if errorbars:
+            for b in summary['running_bins'].unique():
+                if b in bootstraps.index.values:
+                    plt.errorbar(b*bin_width, temp.loc[b].response,
+                        yerr=bootstraps.loc[b][strategy_label+'_sem'],
+                        markeredgecolor=color,fmt='o',markerfacecolor='None',
+                        ecolor=color)   
+                else:
+                    print('missing value')
+
+        plt.plot(summary.running_bins*bin_width, summary.response,'o',
+            markeredgecolor=color,label=label,markerfacecolor='None')
+    else:
+        if errorbars:
+            plt.errorbar(summary.running_bins*bin_width, summary.response,
+                yerr=summary_sem.response,markeredgecolor=color,fmt='o',
+                label=label,markerfacecolor='None',ecolor=color)
+        else:
+            plt.plot(summary.running_bins*bin_width, summary.response,'o',
+                markeredgecolor=color,
+                label=label,markerfacecolor='None')
+    ax.set_ylabel(cre.capitalize()+' '+condition+'\n(avg. Ca$^{2+}$ events)',fontsize=16)
+    ax.set_xlabel('running speed (cm/s)',fontsize=16)
+    ax.spines['right'].set_visible(False)
+    ax.spines['top'].set_visible(False)
+    ax.xaxis.set_tick_params(labelsize=12)
+    ax.yaxis.set_tick_params(labelsize=12) 
+
+    if (cre == 'vip') and (condition =='omission'):
+        ax.set_ylim(0,.07) 
+    elif (cre == 'vip') and (condition =='image'):
+        ax.set_ylim(0,.02)
+    else:
+        ax.set_ylim(bottom=0)
+
+    ax.set_xlim(-1,51)
+    plt.legend()
+    plt.tight_layout() 
+    return ax
+
+
+
+def pre_change_running_responses_strategy(df, condition, cre='vip', bootstraps=None, savefig=False,
+    data='events', strategy='visual_strategy_session',ax=None,errorbars=True,plot_hits=True, plot_misses=True):
+    if condition =='omission':
+        bin_width=5        
+    elif condition =='image':
+        bin_width=5
+    min_events=10
+
+    if ax is None:
+        fig, ax = plt.subplots(figsize=(3.75,2.75))
+
+    if strategy =='visual_strategy_session':
+        strategy_label='visual'
+    else:
+        strategy_label='timing'
+
+    df = df.query(strategy).query('(pre_hit_1==1)or(pre_miss_1==1)').copy()
+    df['running_bins'] = np.floor(df['running_speed']/bin_width)
+
+    split='pre_hit_1'
+    df['pre_hit_1'] = df['pre_hit_1'].astype(bool)
+    summary = df.groupby(['pre_hit_1','running_bins'])['response'].mean()\
+        .reset_index()
+    df1 = summary.query(split)
+    df2=  summary.query('not {}'.format(split))
+   
+    summary_sem = df.groupby([split,'running_bins'])['response'].sem()\
+        .reset_index()
+    df1_sem = summary_sem.query(split)
+    df2_sem = summary_sem.query('not {}'.format(split))
+
+    # Remove running bins with less than 100 responses
+    counts = df.groupby(['running_bins','visual_strategy_session'])\
+        ['response'].count().unstack().reset_index()
+    counts['remove'] = [(row[False]<min_events)or(row[True]<min_events) for \
+        index, row in counts.iterrows()]
+    counts['running_bin'] = counts['running_bins'].astype(int)
+    if bootstraps is not None:
+        bootstraps = pd.merge(bootstraps, counts[['running_bin','remove']],\
+            on='running_bin')
+
+    if strategy == 'visual_strategy_session':
+        hit_color = 'darkorange'
+        mis_color = 'darkorange'
+    else:
+        hit_color = 'blue'
+        mis_color = 'blue'
+    hit_label = 'hit'
+    mis_label = 'miss'
+    #return df1, df2, bootstraps
+    if bootstraps is not None:
+        temp1 = df1.set_index('running_bins')
+        temp2 = df2.set_index('running_bins')
+        bootstraps1= bootstraps.query('change_type=="hit"').set_index('running_bin').copy()
+        bootstraps2= bootstraps.query('change_type=="miss"').set_index('running_bin').copy()
+        if errorbars:
+            if plot_hits:
+                bins = set(bootstraps1.index.values).intersection(set(temp1.index.values))
+                for b in bins:
+                    plt.errorbar(b*bin_width, temp1.loc[b].response,
+                        yerr=bootstraps1.loc[b][strategy_label+'_hit_sem'],color=hit_color,fmt='o')   
+            if plot_misses:
+                bins = set(bootstraps2.index.values).intersection(set(temp2.index.values))
+                for b in bins:
+                    plt.errorbar(b*bin_width, temp2.loc[b].response,
+                        yerr=bootstraps2.loc[b][strategy_label+'_miss_sem'],color=mis_color,fmt='x')     
+        if plot_hits:
+            plt.plot(df1.running_bins*bin_width, df1.response,'o',
+                color=hit_color,label=hit_label)
+        if plot_misses:
+            plt.plot(df2.running_bins*bin_width, df2.response,'x',
+                color=mis_color,label=mis_label)
+    else:
+        if errorbars:
+            if plot_hits:
+                plt.errorbar(df1.running_bins*bin_width, df1.response,
+                    yerr=df1_sem.response,color=hit_color,fmt='o',label=hit_label)
+            if plot_misses:
+                plt.errorbar(df2.running_bins*bin_width, df2.response,
+                    yerr=df2_sem.response,color=mis_color,fmt='x',label=mis_label)
+        else:
+            if plot_hits:
+                plt.plot(df1.running_bins*bin_width, df1.response,'o',
+                    color=hit_color,label=hit_label)
+            if plot_misses:
+                plt.plot(df2.running_bins*bin_width, df2.response,'x',
+                    color=mis_color,label=mis_label)
+    ax.set_ylabel(cre.capitalize()+' '+condition+'\n(avg. Ca$^{2+}$ events)',fontsize=16)
+    ax.set_xlabel('running speed (cm/s)',fontsize=16)
+    ax.spines['right'].set_visible(False)
+    ax.spines['top'].set_visible(False)
+    ax.xaxis.set_tick_params(labelsize=12)
+    ax.yaxis.set_tick_params(labelsize=12) 
+
+    ax.set_ylim(0,.04)
+
+    #if (bootstraps is not None) and ('bh_significant' in bootstraps.columns):
+    #    y =  ax.get_ylim()[1]*1.05
+    #    bootstraps = bootstraps.reset_index()
+    #    for index, row in bootstraps.iterrows():
+    #        if row.bh_significant:
+    #            if row.remove:
+    #                print('Not significant b/c of low count: {}'.format(row.running_bin))
+    #            else:
+    #                ax.plot(row.running_bin*bin_width, y, 'k*')  
+    #    ax.set_ylim(top=y*1.075)
+
+    ax.set_xlim(-1,61)
+    plt.legend()
+
+    plt.tight_layout() 
+
+    # Save fig
+    #if savefig:
+    #    filename = PSTH_DIR + data+'/running/'+\
+    #        'pre_change_running_{}_familiar_{}.svg'.format(cre,strategy)
+    #    print('Figure saved to {}'.format(filename))
+    #    plt.savefig(filename)
+
+
+
+
+
+ 

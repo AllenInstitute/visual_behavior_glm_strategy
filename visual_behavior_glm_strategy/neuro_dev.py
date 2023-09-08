@@ -318,4 +318,16 @@ psth.plot_figure_4_averages_cell_selection(dfs, data='events',
 psth.plot_figure_4_averages_cell_selection(dfs, data='events',
     strategy='strategy_labels_with_mixed')
 
+## Comparing Vip activity before misses and images
+################################################################################
+psth.compare_vip_hit_miss_image_by_running(summary_df, vip_image=vip_image,
+    bootstraps=True, plot_hits=True, plot_misses=True)
+bootstrap_image = psth.get_summary_bootstrap_image_strategy('events',10000,'vip',
+    first=False,second=True, meso=True)
+bootstrap_prechange = psth.get_summary_bootstrap_strategy_pre_change('events',10000,
+    'vip',first=False, second=True, meso=True)
+bootstrap_prechange['visual_image'] = bootstrap_image['visual']
+bootstrap_prechange['timing_image'] = bootstrap_image['timing']
+p = psth.bootstrap_significance(bootstrap_prechange,'visual_image','visual_miss')
+
 
