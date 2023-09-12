@@ -245,6 +245,10 @@ psth.plot_figure_4_behavioral(dfs_zpupil,data='pupil_zscore')
 dfs_licks = psth.get_figure_4_behavioral('licks')
 psth.plot_figure_4_behavioral(dfs_licks,data='licks')
 
+## Supplement - vip running control
+################################################################################
+psth.plot_figure_4_averages_vip_matched()
+
 ## Supplement - False Alarms
 ################################################################################
 dfs = psth.get_figure_4_psth(data='events',mesoscope_only=True)

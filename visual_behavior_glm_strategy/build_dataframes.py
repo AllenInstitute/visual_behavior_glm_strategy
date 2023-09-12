@@ -203,9 +203,9 @@ def temporary_engagement_updates(session):
     '''
         Adds a second engagement definition because I am still looking at that issue
     '''
-    session.behavior_df['engagement_v1'] = session.behavior_df['engaged']
-    session.behavior_df['engagement_v2'] = session.behavior_df['engaged'] \
-        & session.behavior_df['lick_bout_rate'] > 0.1
+    session.behavior_df['engagement_v1'] = session.behavior_df['reward_rate'] > 1/120
+    session.behavior_df['engagement_v2'] = (session.behavior_df['reward_rate'] > 1/120) \
+        | (session.behavior_df['lick_bout_rate'] > 0.1)
 
 
 def build_behavior_df_experiment(session,first=False,second=False,image=False):
@@ -620,7 +620,7 @@ def get_engagement_check(session, condition):
     disengaged = 'disengaged' in condition[0]
     neither = (not engaged) & (not disengaged)
     min_engaged_fraction= 0.05
-    engaged_fraction = np.nanmean(session.behavior_df['engaged'])
+    engaged_fraction = np.nanmean(session.behavior_df['engagement_v2'])
 
     if neither:
         #print('  '+condition[0])
