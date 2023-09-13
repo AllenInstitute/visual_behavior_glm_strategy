@@ -173,7 +173,8 @@ d.plot_by_cre(df3,meso=True)
 dfs = psth.get_figure_4_psth(data='events',mesoscope_only=True)
 psth.plot_engagement(dfs,data='events',meso=True)
 
-exc_change = psth.load_change_df(summary_df, cre='Slc17a7-IRES2-Cre',data='events')
+exc_change = psth.load_change_df(summary_df, cre='Slc17a7-IRES2-Cre',data='events',
+    first=False, second=False,image=True, meso=True)
 psth.plot_summary_bootstrap_strategy_engaged_miss(exc_change,cell_type='exc',
     first=False, second=False,nboots=10000,image=True,meso=True)
 
