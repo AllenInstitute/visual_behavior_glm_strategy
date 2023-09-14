@@ -1468,12 +1468,12 @@ def compute_pre_change_running_bootstrap_compare_strategy(df,condition,cell_type
 
 
 def compute_engagement_running_bootstrap_bin(df, condition, cell_type, strategy,
-    bin_num, nboots=10000, data='events',meso=False,first=False,second=False):
+    bin_num, nboots=10000, data='events',meso=False,first=False,second=False,recompute=False):
 
     filename = get_hierarchy_filename(cell_type,condition,data,'all',nboots,
         ['visual_strategy_session'],'running_engaged_{}_{}'.format(strategy,bin_num),
         meso=meso,first=first,second=second)  
-    if os.path.isfile(filename):
+    if os.path.isfile(filename) & (not recompute):
         print('Already computed {}'.format(bin_num))
         return 
 
