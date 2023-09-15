@@ -8,6 +8,7 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import cross_val_score
 from sklearn.model_selection import cross_val_predict
 from sklearn.model_selection import cross_validate
+import scipy.stats as stats
 import matplotlib.pyplot as plt
 from tqdm import tqdm
 
@@ -250,6 +251,11 @@ def plot_by_strategy_scatter(visual, timing, metric, savefig, cell_type,
         ax.set_aspect('equal')
     colors = gvt.project_colors()
     color = colors[cell_type] 
+    
+    # get_stats
+    df = stats_by_strategy(cell_type,visual,timing,metric)
+    #print('\n\n{}, {}'.format(metric, cell_type))
+    #print(df)    
  
     # visual correlation
     v = visual.groupby('n_cells')
@@ -263,7 +269,7 @@ def plot_by_strategy_scatter(visual, timing, metric, savefig, cell_type,
     tsummary['sem_'+metric] = t[metric].sem()
 
     n = np.min([len(vsummary), len(tsummary)])
-    
+
     ax.errorbar(tsummary.iloc[0:n][metric],
         vsummary.iloc[0:n][metric],
         xerr=tsummary.iloc[0:n]['sem_'+metric],
@@ -274,10 +280,17 @@ def plot_by_strategy_scatter(visual, timing, metric, savefig, cell_type,
     for index in range(0,n):
         ax.scatter(tsummary.iloc[index][metric],
             vsummary.iloc[index][metric],
-            s=tsummary.index.values[index]*1.5,color=color,
-            label=tsummary.index.values[index],alpha=1)
-
-
+            s=tsummary.index.values[index]*1.5,
+            edgecolors=color,
+            facecolors=color,
+            label=tsummary.index.values[index],alpha=1,zorder=10)
+        
+    df = df.set_index('n_cells')
+    for n in df.index.values:
+        if df.loc[n]['p'] < 0.05:
+            ax.plot(tsummary.loc[n][metric]-.005,
+                    vsummary.loc[n][metric]+.005,
+                    'k*')
     if metric == 'behavior_correlation':
         ax.plot([0, .2],[0, .2], 'k--',alpha=.25)
         ax.set_ylabel('visual sessions',
@@ -475,6 +488,23 @@ def plot_by_cre(results_df, aggregate_first=True,areas=['VISp','VISl'],
                 False,mapper[cre],version,ax2,meso=meso)
             plot_by_strategy_scatter(visual,timing,'test_score_hit_vs_miss',
                 False,mapper[cre],version,ax3,meso=meso)
+
+def stats_by_strategy(cre,visual, timing, test='test_score'):
+    n_cells = set(visual.n_cells.unique()).intersection(set(timing.n_cells.unique()))
+    n_cells = np.sort(list(n_cells)) 
+    tests = []
+    for n in n_cells:
+        output = stats.ttest_ind(
+            visual.query('n_cells==@n')[test],
+            timing.query('n_cells==@n')[test])
+        tests.append({
+            'n_cells':n,
+            'cre':cre,
+            'test':test,
+            'p':output.pvalue
+            })
+    df = pd.DataFrame(tests)
+    return df
 
 def iterate_n_cells(cells):
     n_cells = [1,2,5,10,20,40,80]

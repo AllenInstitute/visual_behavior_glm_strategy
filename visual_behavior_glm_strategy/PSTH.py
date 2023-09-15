@@ -1468,12 +1468,12 @@ def compute_pre_change_running_bootstrap_compare_strategy(df,condition,cell_type
 
 
 def compute_engagement_running_bootstrap_bin(df, condition, cell_type, strategy,
-    bin_num, nboots=10000, data='events',meso=False,first=False,second=False):
+    bin_num, nboots=10000, data='events',meso=False,first=False,second=False,recompute=False):
 
     filename = get_hierarchy_filename(cell_type,condition,data,'all',nboots,
         ['visual_strategy_session'],'running_engaged_{}_{}'.format(strategy,bin_num),
         meso=meso,first=first,second=second)  
-    if os.path.isfile(filename):
+    if os.path.isfile(filename) & (not recompute):
         print('Already computed {}'.format(bin_num))
         return 
 
@@ -3665,6 +3665,11 @@ def load_image_df(summary_df, cre,data='events',first=False,second=False,meso=Fa
     # Drop changes and omissions
     df.drop(df[df['is_change'] | df['omitted']].index,inplace=True)
 
+    cols_to_drop=[
+        'post_omitted_2','post_miss_2','post_hit_2','pre_image_fa_2',
+        'engagement_v1','reward_latency','reward_times','running_speed_image_start']
+    df.drop(columns=cols_to_drop,inplace=True,errors='ignore')
+
     # drop familiar sessions
     familiar_summary_df = summary_df.query('experience_level == "Familiar"')
     familiar_bsid = familiar_summary_df['behavior_session_id'].unique()
@@ -3675,7 +3680,7 @@ def load_image_df(summary_df, cre,data='events',first=False,second=False,meso=Fa
     experiment_table = glm_params.get_experiment_table()
     df = bd.add_area_depth(df, experiment_table)
     df = pd.merge(df, experiment_table.reset_index()[['ophys_experiment_id',
-        'binned_depth','equipment_name']],on='ophys_experiment_id')
+        'equipment_name']],on='ophys_experiment_id')
 
     # Limit to Mesoscope
     if meso:
