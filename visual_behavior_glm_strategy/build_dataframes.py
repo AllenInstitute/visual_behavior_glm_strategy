@@ -527,6 +527,9 @@ def get_image_df(cell_df,run_df, pupil_df, session,cell_specimen_id,data,
     image_df['post_omitted_1'] = image_df['omitted'].shift(1,fill_value=False)
     image_df['post_omitted_2'] = image_df['omitted'].shift(2,fill_value=False)
 
+    # Add pre omission
+    image_df['pre_omitted_1'] = image_df['omitted'].shift(-1,fill_value=False)
+
     # Add post change
     image_df['post_miss_1'] = image_df['miss'].shift(1)
     image_df['post_miss_2'] = image_df['miss'].shift(2)
@@ -541,12 +544,6 @@ def get_image_df(cell_df,run_df, pupil_df, session,cell_specimen_id,data,
     image_df['image_fa'] = (~image_df['is_change']) & image_df['lick_bout_start']
     image_df['pre_image_fa_1'] = image_df['image_fa'].shift(-1)
     image_df['pre_image_fa_2'] = image_df['image_fa'].shift(-2)
-
-    # Add pre omission licking
-    image_df['pre_omission_lick'] = image_df['omitted'] & \
-        image_df['lick_bout_start'].shift(-1)
-    image_df['pre_omission_no_lick'] = image_df['omitted'] & \
-        (~image_df['lick_bout_start']).shift(-1) 
 
     # Add running speed
     if run_df is not None:

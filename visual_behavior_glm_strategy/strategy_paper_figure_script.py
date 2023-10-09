@@ -63,7 +63,7 @@ sst_change = psth.load_change_df(summary_df, cre='Sst-IRES-Cre',data='events',
 psth.plot_summary_bootstrap_strategy_hit(sst_change,'sst',first=False, second=True,
     meso=True)
 
-# determine pre-change for Vip
+# determine pre-change for Vip 
 vip_image = psth.load_image_df(summary_df, cre='Vip-IRES-Cre',data='events',
     first=False, second=True,meso=True)
 psth.plot_summary_bootstrap_strategy_pre_change(vip_image,'vip',first=False, 
@@ -72,6 +72,16 @@ psth.plot_summary_bootstrap_strategy_pre_change(vip_image,'vip',first=False,
 # Check multiple comparisons
 tests = psth.bootstrap_summary_multiple_comparisons()
 
+# Determine exc post-omission
+exc_image = psth.load_image_df(summary_df, cre='Slc17a7-IRES2-Cre',data='events',
+    first=False, second=False, image=True, meso=True)
+exc_post=exc_image.query('post_omitted_1').copy()
+psth.plot_summary_bootstrap_omission_strategy(exc_post, 'exc',first=False, second=False,
+    image=True, meso=True,post=True) # no strategy difference after omissions
+
+exc_pre_post = exc_image.query('(pre_omitted_1) or (post_omitted_1)').copy()
+psth.plot_summary_bootstrap_pre_post_omission(exc_pre_post, 'exc',first=False, second=False,
+    image=True, meso=True)
 
 ## Fig. 4F/G/H - Multi-level regression
 ################################################################################

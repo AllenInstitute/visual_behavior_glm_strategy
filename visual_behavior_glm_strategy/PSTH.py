@@ -2011,6 +2011,60 @@ def engagement_running_responses(df, condition, cre='vip', vis_boots=None,
         print('Figure saved to {}'.format(filename))
         plt.savefig(filename) 
 
+def compute_summary_bootstrap_pre_post_omission(df,data='events',nboots=10000,
+    cell_type='exc',first=False,second=False,image=True,meso=True):
+
+    df = df.query('(pre_omitted_1) or (post_omitted_1)')
+    df['group'] = df['pre_omitted_1'].astype(str)
+    mapper = {
+        'True':'pre_omitted',
+        'False':'post_omitted',
+    }
+    df['group'] = [mapper[x] for x in df['group']]
+    bootstrap = hb.bootstrap(df, levels=['group','ophys_experiment_id','cell_specimen_id'],
+        nboots=nboots)
+
+    filepath = PSTH_DIR + data +'/bootstraps/'+cell_type+'_pre_post_omission_summary_'+str(nboots)
+    if first:
+        filepath += '_first'
+    if second:
+        filepath += '_second'
+    if image:
+        filepath += '_image'
+    if meso:
+        filepath += '_meso'
+    filepath = filepath+'.feather'
+
+    with open(filepath,'wb') as handle:
+        pickle.dump(bootstrap, handle, protocol=pickle.HIGHEST_PROTOCOL)
+    print('bootstrap saved to {}'.format(filepath)) 
+
+
+def get_summary_bootstrap_pre_post_omission(data='events',nboots=10000,cell_type='exc',
+    first=True,second=False,image=True,meso=True):
+
+    filepath = PSTH_DIR + data +'/bootstraps/'+cell_type\
+        +'_pre_post_omission_summary_'+str(nboots)
+    if first:
+        filepath += '_first'
+    if second:
+        filepath += '_second'
+    if image:
+        filepath += '_image'
+    if meso:
+        filepath += '_meso'
+    filepath = filepath+'.feather'
+
+    if os.path.isfile(filepath):
+        # Load this bin
+        with open(filepath,'rb') as handle:
+            this_boot = pickle.load(handle)
+        print('loading from file')
+        return this_boot
+    else:
+        print('file not found')
+
+
 def compute_summary_bootstrap_image_strategy(df,data='events',nboots=10000,cell_type='exc',
     first=True,second=False,post=False,meso=False):
 
