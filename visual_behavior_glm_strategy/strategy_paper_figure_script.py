@@ -79,9 +79,21 @@ exc_post=exc_image.query('post_omitted_1').copy()
 psth.plot_summary_bootstrap_omission_strategy(exc_post, 'exc',first=False, second=False,
     image=True, meso=True,post=True) # no strategy difference after omissions
 
+# determine sst pre/post omission
 exc_pre_post = exc_image.query('(pre_omitted_1) or (post_omitted_1)').copy()
 psth.plot_summary_bootstrap_pre_post_omission(exc_pre_post, 'exc',first=False, second=False,
     image=True, meso=True)
+
+# Determine sst pre/post omission
+sst_image = psth.load_image_df(summary_df, cre='Sst-IRES-Cre',data='events',
+    first=True, second=False, meso=True,image=False)
+sst_pre_post = sst_image.query('(pre_omitted_1) or (post_omitted_1)').copy()
+plot_summary_bootstrap_pre_post_omission(sst_pre_post,'sst',first=True, second=False,
+    post=False, meso=True)
+plot_summary_bootstrap_pre_post_omission(sst_pre_post.query('visual_strategy_session'),
+    'vsst',first=True, second=False,post=False, meso=True) # no difference
+plot_summary_bootstrap_pre_post_omission(sst_pre_post.query('not visual_strategy_session'),
+    'tsst',first=True, second=False,post=False, meso=True)
 
 ## Fig. 4F/G/H - Multi-level regression
 ################################################################################

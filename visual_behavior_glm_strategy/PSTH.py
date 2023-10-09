@@ -2064,6 +2064,71 @@ def get_summary_bootstrap_pre_post_omission(data='events',nboots=10000,cell_type
     else:
         print('file not found')
 
+def plot_summary_bootstrap_pre_post_omission(df,cell_type,savefig=False,data='events',
+    nboots=10000,first=True, second=False,post=False,meso=False):
+    
+    bootstrap = get_summary_bootstrap_pre_post_omission(data, nboots,cell_type,
+        first,second,post,meso)   
+ 
+    fig,ax = plt.subplots(figsize=(2.5,2.75))
+    pre_mean = df.query('pre_omitted_1')['response'].mean()
+    post_mean = df.query('post_omitted_1')['response'].mean()
+    means={}
+    means['pre_omitted'] = pre_mean
+    means['post_omitted'] = post_mean
+    pre_sem = np.std(bootstrap['pre_omitted'])
+    post_sem = np.std(bootstrap['post_omitted'])
+    ax.plot(0, pre_mean,'o',color='black')
+    ax.plot(1,post_mean,'o',color='black')
+    ax.plot([0,0],[pre_mean-pre_sem,pre_mean+pre_sem],'-',color='black')
+    ax.plot([1,1],[post_mean-post_sem,post_mean+post_sem],'-',color='black')
+
+    mapper={
+        'exc':'Excitatory',
+        'sst':'Sst Inhibitory',
+        'tsst':'Sst Inhibitory',
+        'vsst':'Sst Inhibitory',
+        'vip':'Vip Inhibitory'
+        }
+    nice_cell =mapper[cell_type] 
+
+    ax.set_ylabel(nice_cell+' \n(avg. Ca$^{2+}$ events)',fontsize=16)
+    ax.spines['right'].set_visible(False)
+    ax.spines['top'].set_visible(False)
+    ax.xaxis.set_tick_params(labelsize=12)
+    ax.yaxis.set_tick_params(labelsize=12)
+    ax.set_xticks([0,1])
+    ax.set_xticklabels(['Pre','Post'],fontsize=16)
+    ax.set_xlim(-.5,1.5)
+    ax.set_ylim(bottom=0)
+    
+    p = bootstrap_significance(bootstrap, 'pre_omitted','post_omitted')
+    if (p < 0.05) or(p>.95):
+        ylim = ax.get_ylim()[1]
+        plt.plot([0,1],[ylim*1.1,ylim*1.1],'k-')
+        plt.plot([0,0],[ylim*1.05,ylim*1.1],'k-')
+        plt.plot([1,1],[ylim*1.05,ylim*1.1],'k-')
+        plt.plot(0.5,ylim*1.15, 'k*')
+        ax.set_ylim(top=ylim*1.2)
+
+    plt.tight_layout()   
+
+    if savefig:
+        filepath = PSTH_DIR + data +'/summary/'+cell_type+'_pre_post_omission_summary_'+str(nboots)
+        if first:
+            filepath += '_first'
+        if second:
+            filepath += '_second'
+        if post:
+            filepath += '_post'
+        if meso:
+            filepath += '_meso'
+        filepath = filepath+'.svg'
+        print('Figure saved to: '+filepath)
+        plt.savefig(filepath)
+    print_bootstrap_summary(means,bootstrap,p,keys=['pre_omitted','post_omitted'])
+
+
 
 def compute_summary_bootstrap_image_strategy(df,data='events',nboots=10000,cell_type='exc',
     first=True,second=False,post=False,meso=False):
