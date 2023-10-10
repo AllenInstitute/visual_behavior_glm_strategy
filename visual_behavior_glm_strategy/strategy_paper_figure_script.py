@@ -69,10 +69,7 @@ vip_image = psth.load_image_df(summary_df, cre='Vip-IRES-Cre',data='events',
 psth.plot_summary_bootstrap_strategy_pre_change(vip_image,'vip',first=False, 
     second=True,meso=True)
 
-# Check multiple comparisons
-tests = psth.bootstrap_summary_multiple_comparisons()
-
-# Determine exc post-omission
+# Determine exc post-omission by strategy
 exc_image = psth.load_image_df(summary_df, cre='Slc17a7-IRES2-Cre',data='events',
     first=False, second=False, image=True, meso=True)
 exc_post=exc_image.query('post_omitted_1').copy()
@@ -82,22 +79,25 @@ psth.plot_summary_bootstrap_omission_strategy(exc_post, 'exc',first=False, secon
 # determine sst pre/post omission
 exc_pre_post = exc_image.query('(pre_omitted_1) or (post_omitted_1)').copy()
 psth.plot_summary_bootstrap_pre_post_omission(exc_pre_post, 'exc',first=False, second=False,
-    image=True, meso=True) # ?
+    image=True, meso=True) 
 psth.plot_summary_bootstrap_pre_post_omission(exc_pre_post.query('visual_strategy_session'), 
-    'vexc',first=False, second=False,image=True, meso=True) # ?
+    'vexc',first=False, second=False,image=True, meso=True) 
 psth.plot_summary_bootstrap_pre_post_omission(exc_pre_post.query('not visual_strategy_session'), 
-    'texc',first=False, second=False,image=True, meso=True) # ?
+    'texc',first=False, second=False,image=True, meso=True) 
 
 # Determine sst pre/post omission
 sst_image = psth.load_image_df(summary_df, cre='Sst-IRES-Cre',data='events',
     first=False, second=False, meso=True,image=True)
 sst_pre_post = sst_image.query('(pre_omitted_1) or (post_omitted_1)').copy()
 psth.plot_summary_bootstrap_pre_post_omission(sst_pre_post,'sst',first=False, second=False,
-    image=True, meso=True) # no difference
+    image=True, meso=True) 
 psth.plot_summary_bootstrap_pre_post_omission(sst_pre_post.query('visual_strategy_session'),
-    'vsst',first=False, second=False,image=True, meso=True) # no difference
+    'vsst',first=False, second=False,image=True, meso=True) 
 psth.plot_summary_bootstrap_pre_post_omission(sst_pre_post.query('not visual_strategy_session'),
-    'tsst',first=False, second=False,image=True, meso=True) # no difference
+    'tsst',first=False, second=False,image=True, meso=True) 
+
+# Check multiple comparisons
+tests = psth.bootstrap_summary_multiple_comparisons()
 
 ## Fig. 4F/G/H - Multi-level regression
 ################################################################################

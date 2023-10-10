@@ -4252,6 +4252,12 @@ def bootstrap_summary_multiple_comparisons():
         meso=True)
     p = bootstrap_significance(sst_image,'visual','timing')
     tests['sst_image']=p
+    
+    # Exc, omissions, comparing strategies
+    exc_omission = get_summary_bootstrap_omission_strategy(cell_type='exc',first=False,
+        second=False, meso=True, image=True, post=True)
+    p = bootstrap_significance(exc_omission,'visual','timing')
+    tests['exc_omission']=p
 
     # Sst, omissions, comparing strategies    
     sst_omission = get_summary_bootstrap_omission_strategy(cell_type='sst',first=False,
@@ -4264,6 +4270,26 @@ def bootstrap_summary_multiple_comparisons():
         meso=True)
     p = bootstrap_significance(vip_omission,'visual','timing')
     tests['vip_omission']=p   
+
+    # Exc, omissions, pre/post
+    exc_omission = get_summary_bootstrap_pre_post_omission(cell_type='exc',first=False,
+        second=False, meso=True, image=True)
+    p = bootstrap_significance(exc_omission,'pre_omitted','post_omitted')
+    tests['exc_prepost_omission']=p
+
+    # Sst, omissions, pre/post
+    sst_omission = get_summary_bootstrap_pre_post_omission(cell_type='vsst',first=False,
+        second=False, meso=True, image=True)
+    p = bootstrap_significance(sst_omission,'pre_omitted','post_omitted')
+    tests['visual_sst_prepost_omission']=p
+    sst_omission = get_summary_bootstrap_pre_post_omission(cell_type='tsst',first=False,
+        second=False, meso=True, image=True)
+    p = bootstrap_significance(sst_omission,'pre_omitted','post_omitted')
+    tests['timing_sst_prepost_omission']=p
+    sst_omission = get_summary_bootstrap_pre_post_omission(cell_type='sst',first=False,
+        second=False, meso=True, image=True)
+    p = bootstrap_significance(sst_omission,'pre_omitted','post_omitted')
+    tests['sst_prepost_omission']=p
 
     # Exc, changes, comparing strategies
     exc_hit = get_summary_bootstrap_strategy_hit(cell_type='exc', first=False, second=False,
