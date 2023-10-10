@@ -82,18 +82,22 @@ psth.plot_summary_bootstrap_omission_strategy(exc_post, 'exc',first=False, secon
 # determine sst pre/post omission
 exc_pre_post = exc_image.query('(pre_omitted_1) or (post_omitted_1)').copy()
 psth.plot_summary_bootstrap_pre_post_omission(exc_pre_post, 'exc',first=False, second=False,
-    image=True, meso=True)
+    image=True, meso=True) # ?
+psth.plot_summary_bootstrap_pre_post_omission(exc_pre_post.query('visual_strategy_session'), 
+    'vexc',first=False, second=False,image=True, meso=True) # ?
+psth.plot_summary_bootstrap_pre_post_omission(exc_pre_post.query('not visual_strategy_session'), 
+    'texc',first=False, second=False,image=True, meso=True) # ?
 
 # Determine sst pre/post omission
 sst_image = psth.load_image_df(summary_df, cre='Sst-IRES-Cre',data='events',
-    first=True, second=False, meso=True,image=False)
+    first=False, second=False, meso=True,image=True)
 sst_pre_post = sst_image.query('(pre_omitted_1) or (post_omitted_1)').copy()
-plot_summary_bootstrap_pre_post_omission(sst_pre_post,'sst',first=True, second=False,
-    post=False, meso=True)
-plot_summary_bootstrap_pre_post_omission(sst_pre_post.query('visual_strategy_session'),
-    'vsst',first=True, second=False,post=False, meso=True) # no difference
-plot_summary_bootstrap_pre_post_omission(sst_pre_post.query('not visual_strategy_session'),
-    'tsst',first=True, second=False,post=False, meso=True)
+psth.plot_summary_bootstrap_pre_post_omission(sst_pre_post,'sst',first=False, second=False,
+    image=True, meso=True) # no difference
+psth.plot_summary_bootstrap_pre_post_omission(sst_pre_post.query('visual_strategy_session'),
+    'vsst',first=False, second=False,image=True, meso=True) # no difference
+psth.plot_summary_bootstrap_pre_post_omission(sst_pre_post.query('not visual_strategy_session'),
+    'tsst',first=False, second=False,image=True, meso=True) # no difference
 
 ## Fig. 4F/G/H - Multi-level regression
 ################################################################################

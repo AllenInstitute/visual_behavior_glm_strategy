@@ -2065,10 +2065,10 @@ def get_summary_bootstrap_pre_post_omission(data='events',nboots=10000,cell_type
         print('file not found')
 
 def plot_summary_bootstrap_pre_post_omission(df,cell_type,savefig=False,data='events',
-    nboots=10000,first=True, second=False,post=False,meso=False):
+    nboots=10000,first=True, second=False,image=False,meso=False):
     
     bootstrap = get_summary_bootstrap_pre_post_omission(data, nboots,cell_type,
-        first,second,post,meso)   
+        first,second,image,meso)   
  
     fig,ax = plt.subplots(figsize=(2.5,2.75))
     pre_mean = df.query('pre_omitted_1')['response'].mean()
@@ -2085,6 +2085,8 @@ def plot_summary_bootstrap_pre_post_omission(df,cell_type,savefig=False,data='ev
 
     mapper={
         'exc':'Excitatory',
+        'texc':'Excitatory',
+        'vexc':'Excitatory',
         'sst':'Sst Inhibitory',
         'tsst':'Sst Inhibitory',
         'vsst':'Sst Inhibitory',
@@ -2119,8 +2121,8 @@ def plot_summary_bootstrap_pre_post_omission(df,cell_type,savefig=False,data='ev
             filepath += '_first'
         if second:
             filepath += '_second'
-        if post:
-            filepath += '_post'
+        if image:
+            filepath += '_image'
         if meso:
             filepath += '_meso'
         filepath = filepath+'.svg'
