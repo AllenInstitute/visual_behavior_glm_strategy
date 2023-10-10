@@ -2011,6 +2011,127 @@ def engagement_running_responses(df, condition, cre='vip', vis_boots=None,
         print('Figure saved to {}'.format(filename))
         plt.savefig(filename) 
 
+def compute_summary_bootstrap_pre_post_omission(df,data='events',nboots=10000,
+    cell_type='exc',first=False,second=False,image=True,meso=True):
+
+    df = df.query('(pre_omitted_1) or (post_omitted_1)')
+    df['group'] = df['pre_omitted_1'].astype(str)
+    mapper = {
+        'True':'pre_omitted',
+        'False':'post_omitted',
+    }
+    df['group'] = [mapper[x] for x in df['group']]
+    bootstrap = hb.bootstrap(df, levels=['group','ophys_experiment_id','cell_specimen_id'],
+        nboots=nboots)
+
+    filepath = PSTH_DIR + data +'/bootstraps/'+cell_type+'_pre_post_omission_summary_'+str(nboots)
+    if first:
+        filepath += '_first'
+    if second:
+        filepath += '_second'
+    if image:
+        filepath += '_image'
+    if meso:
+        filepath += '_meso'
+    filepath = filepath+'.feather'
+
+    with open(filepath,'wb') as handle:
+        pickle.dump(bootstrap, handle, protocol=pickle.HIGHEST_PROTOCOL)
+    print('bootstrap saved to {}'.format(filepath)) 
+
+
+def get_summary_bootstrap_pre_post_omission(data='events',nboots=10000,cell_type='exc',
+    first=True,second=False,image=True,meso=True):
+
+    filepath = PSTH_DIR + data +'/bootstraps/'+cell_type\
+        +'_pre_post_omission_summary_'+str(nboots)
+    if first:
+        filepath += '_first'
+    if second:
+        filepath += '_second'
+    if image:
+        filepath += '_image'
+    if meso:
+        filepath += '_meso'
+    filepath = filepath+'.feather'
+
+    if os.path.isfile(filepath):
+        # Load this bin
+        with open(filepath,'rb') as handle:
+            this_boot = pickle.load(handle)
+        print('loading from file')
+        return this_boot
+    else:
+        print('file not found')
+
+def plot_summary_bootstrap_pre_post_omission(df,cell_type,savefig=False,data='events',
+    nboots=10000,first=True, second=False,image=False,meso=False):
+    
+    bootstrap = get_summary_bootstrap_pre_post_omission(data, nboots,cell_type,
+        first,second,image,meso)   
+ 
+    fig,ax = plt.subplots(figsize=(2.5,2.75))
+    pre_mean = df.query('pre_omitted_1')['response'].mean()
+    post_mean = df.query('post_omitted_1')['response'].mean()
+    means={}
+    means['pre_omitted'] = pre_mean
+    means['post_omitted'] = post_mean
+    pre_sem = np.std(bootstrap['pre_omitted'])
+    post_sem = np.std(bootstrap['post_omitted'])
+    ax.plot(0, pre_mean,'o',color='black')
+    ax.plot(1,post_mean,'o',color='black')
+    ax.plot([0,0],[pre_mean-pre_sem,pre_mean+pre_sem],'-',color='black')
+    ax.plot([1,1],[post_mean-post_sem,post_mean+post_sem],'-',color='black')
+
+    mapper={
+        'exc':'Excitatory',
+        'texc':'Excitatory',
+        'vexc':'Excitatory',
+        'sst':'Sst Inhibitory',
+        'tsst':'Sst Inhibitory',
+        'vsst':'Sst Inhibitory',
+        'vip':'Vip Inhibitory'
+        }
+    nice_cell =mapper[cell_type] 
+
+    ax.set_ylabel(nice_cell+' \n(avg. Ca$^{2+}$ events)',fontsize=16)
+    ax.spines['right'].set_visible(False)
+    ax.spines['top'].set_visible(False)
+    ax.xaxis.set_tick_params(labelsize=12)
+    ax.yaxis.set_tick_params(labelsize=12)
+    ax.set_xticks([0,1])
+    ax.set_xticklabels(['Pre','Post'],fontsize=16)
+    ax.set_xlim(-.5,1.5)
+    ax.set_ylim(bottom=0)
+    
+    p = bootstrap_significance(bootstrap, 'pre_omitted','post_omitted')
+    if (p < 0.05) or(p>.95):
+        ylim = ax.get_ylim()[1]
+        plt.plot([0,1],[ylim*1.1,ylim*1.1],'k-')
+        plt.plot([0,0],[ylim*1.05,ylim*1.1],'k-')
+        plt.plot([1,1],[ylim*1.05,ylim*1.1],'k-')
+        plt.plot(0.5,ylim*1.15, 'k*')
+        ax.set_ylim(top=ylim*1.2)
+
+    plt.tight_layout()   
+
+    if savefig:
+        filepath = PSTH_DIR + data +'/summary/'+cell_type+'_pre_post_omission_summary_'+str(nboots)
+        if first:
+            filepath += '_first'
+        if second:
+            filepath += '_second'
+        if image:
+            filepath += '_image'
+        if meso:
+            filepath += '_meso'
+        filepath = filepath+'.svg'
+        print('Figure saved to: '+filepath)
+        plt.savefig(filepath)
+    print_bootstrap_summary(means,bootstrap,p,keys=['pre_omitted','post_omitted'])
+
+
+
 def compute_summary_bootstrap_image_strategy(df,data='events',nboots=10000,cell_type='exc',
     first=True,second=False,post=False,meso=False):
 
@@ -4131,6 +4252,12 @@ def bootstrap_summary_multiple_comparisons():
         meso=True)
     p = bootstrap_significance(sst_image,'visual','timing')
     tests['sst_image']=p
+    
+    # Exc, omissions, comparing strategies
+    exc_omission = get_summary_bootstrap_omission_strategy(cell_type='exc',first=False,
+        second=False, meso=True, image=True, post=True)
+    p = bootstrap_significance(exc_omission,'visual','timing')
+    tests['exc_omission']=p
 
     # Sst, omissions, comparing strategies    
     sst_omission = get_summary_bootstrap_omission_strategy(cell_type='sst',first=False,
@@ -4143,6 +4270,26 @@ def bootstrap_summary_multiple_comparisons():
         meso=True)
     p = bootstrap_significance(vip_omission,'visual','timing')
     tests['vip_omission']=p   
+
+    # Exc, omissions, pre/post
+    exc_omission = get_summary_bootstrap_pre_post_omission(cell_type='exc',first=False,
+        second=False, meso=True, image=True)
+    p = bootstrap_significance(exc_omission,'pre_omitted','post_omitted')
+    tests['exc_prepost_omission']=p
+
+    # Sst, omissions, pre/post
+    sst_omission = get_summary_bootstrap_pre_post_omission(cell_type='vsst',first=False,
+        second=False, meso=True, image=True)
+    p = bootstrap_significance(sst_omission,'pre_omitted','post_omitted')
+    tests['visual_sst_prepost_omission']=p
+    sst_omission = get_summary_bootstrap_pre_post_omission(cell_type='tsst',first=False,
+        second=False, meso=True, image=True)
+    p = bootstrap_significance(sst_omission,'pre_omitted','post_omitted')
+    tests['timing_sst_prepost_omission']=p
+    sst_omission = get_summary_bootstrap_pre_post_omission(cell_type='sst',first=False,
+        second=False, meso=True, image=True)
+    p = bootstrap_significance(sst_omission,'pre_omitted','post_omitted')
+    tests['sst_prepost_omission']=p
 
     # Exc, changes, comparing strategies
     exc_hit = get_summary_bootstrap_strategy_hit(cell_type='exc', first=False, second=False,
