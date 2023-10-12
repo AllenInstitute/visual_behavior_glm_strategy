@@ -4593,8 +4593,38 @@ def pre_change_running_responses_strategy(df, condition, cre='vip', bootstraps=N
     #    print('Figure saved to {}'.format(filename))
     #    plt.savefig(filename)
 
+def check_interaction_effects():
+    exc_bootstraps = get_summary_bootstrap_strategy_hit(cell_type='exc',first=False,
+        second=False, image=True, meso=True)
+    exc_vis_hit  = np.array(exc_bootstraps['visual_hit']) 
+    exc_vis_miss = np.array(exc_bootstraps['visual_miss']) 
+    exc_tim_hit  = np.array(exc_bootstraps['timing_hit']) 
+    exc_tim_miss = np.array(exc_bootstraps['timing_miss']) 
+    exc_p = np.mean((exc_vis_hit < exc_vis_miss) | (exc_vis_hit < exc_tim_hit))
+
+    sst_bootstraps = get_summary_bootstrap_strategy_hit(cell_type='sst',first=False,
+        second=True, image=False, meso=True)
+    sst_vis_hit  = np.array(sst_bootstraps['visual_hit']) 
+    sst_vis_miss = np.array(sst_bootstraps['visual_miss']) 
+    sst_tim_hit  = np.array(sst_bootstraps['timing_hit']) 
+    sst_tim_miss = np.array(sst_bootstraps['timing_miss']) 
+    sst_p = np.mean((sst_vis_hit > sst_vis_miss) | (sst_vis_hit > sst_tim_hit))
+
+    vip_bootstraps = get_summary_bootstrap_strategy_pre_change(cell_type='vip',first=False,
+        second=True, meso=True)
+    vip_vis_hit  = np.array(vip_bootstraps['visual_hit']) 
+    vip_vis_miss = np.array(vip_bootstraps['visual_miss']) 
+    vip_tim_hit  = np.array(vip_bootstraps['timing_hit']) 
+    vip_tim_miss = np.array(vip_bootstraps['timing_miss']) 
+    vip_p = np.mean((vip_vis_hit < vip_vis_miss) \
+        | (vip_vis_miss < vip_tim_miss) | (vip_vis_hit < vip_tim_hit))
+
+    print('Exc: {}'.format(exc_p))
+    print('Sst: {}'.format(sst_p))
+    print('Vip: {}'.format(vip_p))
 
 
 
 
- 
+
+

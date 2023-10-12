@@ -99,6 +99,8 @@ psth.plot_summary_bootstrap_pre_post_omission(sst_pre_post.query('not visual_str
 # Check multiple comparisons
 tests = psth.bootstrap_summary_multiple_comparisons()
 
+psth.check_interaction_effects()
+
 ## Fig. 4F/G/H - Multi-level regression
 ################################################################################
 multilevel_summary = \
