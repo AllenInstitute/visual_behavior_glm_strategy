@@ -268,6 +268,9 @@ psth.plot_figure_4_averages(dfs, data='events',meso=True,areas=['VISl'],in_ylims
 dfs_zrunning = psth.get_figure_4_behavioral('running_zscore')
 psth.plot_figure_4_behavioral(dfs_zrunning,data='running_zscore')
 
+dfs_running = psth.get_figure_4_behavioral('running')
+psth.plot_figure_4_behavioral(dfs_running,data='running')
+
 dfs_zpupil = psth.get_figure_4_behavioral('pupil_zscore')
 psth.plot_figure_4_behavioral(dfs_zpupil,data='pupil_zscore')
 
@@ -277,6 +280,9 @@ psth.plot_figure_4_behavioral(dfs_licks,data='licks')
 ## Supplement - vip running control
 ################################################################################
 psth.plot_figure_4_averages_vip_matched()
+psth.plot_figure_4_averages_vip_matched_behavior('pupil_zscore')
+psth.plot_figure_4_averages_vip_matched_behavior('running')
+psth.plot_figure_4_averages_vip_matched_behavior('licks')
 
 ## Supplement - False Alarms
 ################################################################################

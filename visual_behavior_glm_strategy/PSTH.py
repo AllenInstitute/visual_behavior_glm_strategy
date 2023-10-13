@@ -422,6 +422,8 @@ def plot_figure_4_behavioral_inner(dfs,data='filtered_events',savefig=False,\
             ylabel=labels[index] + '\n running (z-score)'
         elif data == 'pupil_zscore':
             ylabel=labels[index] + '\n pupil (z-score)'
+        elif data == 'running':
+            ylabel=labels[index] + '\n running (cm/s)'
         else:
             ylabel=labels[index] +'\n({})'.format(data)
         max_y[0] = plot_condition_experience(full_df, 'omission', experience_level,
@@ -452,6 +454,10 @@ def plot_figure_4_behavioral_inner(dfs,data='filtered_events',savefig=False,\
         for a in ax:
             for b in a:
                 b.set_ylim(-1.75,1)
+    elif data == 'running':
+        for a in ax:
+            for b in a:
+                b.set_ylim(0,35)
     elif data == 'pupil_zscore':
         for a in ax:
             for b in a:
@@ -476,10 +482,93 @@ def plot_figure_4_behavioral_inner(dfs,data='filtered_events',savefig=False,\
         plt.savefig(filename)
     return ylims
 
+def plot_figure_4_averages_vip_matched_behavior(data='running',experience_level='Familiar',
+    savefig=False, meso=True):
+    dfs = get_figure_4_behavioral(data)
+    # Vip mouse ids excluding three low running mice
+    mouse_ids = [528097,453991, 435431, 523922, 453989, 438912]
+    full_df = dfs[2].query('mouse_id in @mouse_ids').copy()    
 
-def plot_figure_4_averages_vip_matched(dfs=None,ylims=None, savefig=False,experience_level='Familiar',
-    meso=True):
-    if (ylims is None) or (dfs is None):
+    fig, ax = plt.subplots(1,4,figsize=(13,2.7),sharey='row',squeeze=False) 
+    label='Vip Inhibitory'
+    error_type='sem'
+    strategy='visual_strategy_session'
+    areas=['behavior']
+    depths=['behavior']
+    full_df['targeted_structure'] = 'behavior'
+    full_df['layer'] = 'behavior' 
+    ylims = [0,0,0,0]
+    max_y = [0,0,0,0]
+    if data in ['events','filtered_events']:
+        ylabel=label +'\n(Ca$^{2+}$ events)'
+    elif data == 'licks':
+        ylabel=label +'\n(licks/s)'
+    elif data == 'running_zscore':
+        ylabel=label + '\n running (z-score)'
+    elif data == 'pupil_zscore':
+        ylabel=label + '\n pupil (z-score)'
+    elif data == 'running':
+        ylabel=label + '\n running (cm/s)'
+    else:
+        ylabel=label +'\n({})'.format(data)
+    max_y[0] = plot_condition_experience(full_df, 'omission', experience_level,
+        strategy, ax=ax[0,0], ylabel=ylabel,
+        error_type=error_type,areas=areas,depths=depths)
+    max_y[1] = plot_condition_experience(full_df, 'hit', experience_level,
+        strategy, ax=ax[0,1],ylabel='',
+        error_type=error_type,areas=areas,depths=depths)
+    max_y[2] = plot_condition_experience(full_df, 'miss', experience_level,
+        strategy, ax=ax[0,2],ylabel='',
+        error_type=error_type,areas=areas,depths=depths)
+    max_y[3] = plot_condition_experience(full_df, 'image_fa', experience_level,
+        strategy, ax=ax[0,3],ylabel='',
+        error_type=error_type,areas=areas,depths=depths)
+    ax[0,0].set_ylim(top = 1.05*np.max(max_y))
+    ylim = 1.05*np.max(max_y)
+
+    ax[0,0].set_xlabel('time from omission (s)',fontsize=16)
+    ax[0,1].set_xlabel('time from hit (s)',fontsize=16)
+    ax[0,2].set_xlabel('time from miss (s)',fontsize=16)
+    ax[0,3].set_xlabel('time from false alarm (s)',fontsize=16)
+
+    if data == 'running_zscore':
+        for a in ax:
+            for b in a:
+                b.set_ylim(-1.75,1)
+    elif data == 'running':
+        for a in ax:
+            for b in a:
+                b.set_ylim(0,35)
+    elif data == 'pupil_zscore':
+        for a in ax:
+            for b in a:
+                b.set_ylim(-1,1)
+    elif data == 'licks':
+        for a in ax:
+            for b in a:
+                b.set_ylim(0,8.5)
+
+    # Clean up
+    plt.tight_layout()
+    if savefig:
+        if ('VISp' not in areas) | ('VISl' not in areas):
+            experience_level = experience_level +'_'+'_'.join(areas)
+        if meso:
+            filename = PSTH_DIR + data + '/population_averages/'+\
+                'figure_4_comparisons_psth_meso_vip_matched'+experience_level+'.svg'        
+        else:
+            filename = PSTH_DIR + data + '/population_averages/'+\
+                'figure_4_comparisons_psth_'+experience_level+'.svg' 
+        print('Figure saved to: '+filename)
+        plt.savefig(filename)
+    return ylims
+
+
+
+def plot_figure_4_averages_vip_matched(dfs=None,ylims=None, savefig=False,
+    experience_level='Familiar',meso=True):
+
+    if (dfs is None):
         dfs = get_figure_4_psth(data='events',mesoscope_only=True)
         ylims = plot_figure_4_averages(dfs, data='events',meso=True) 
 
