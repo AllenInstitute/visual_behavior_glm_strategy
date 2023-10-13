@@ -451,11 +451,15 @@ def plot_figure_4_behavioral_inner(dfs,data='filtered_events',savefig=False,\
     if data == 'running_zscore':
         for a in ax:
             for b in a:
-               b.set_ylim(-1.75,1)
+                b.set_ylim(-1.75,1)
     elif data == 'pupil_zscore':
         for a in ax:
             for b in a:
-               b.set_ylim(-1,1)
+                b.set_ylim(-1,1)
+    elif data == 'licks':
+        for a in ax:
+            for b in a:
+                b.set_ylim(0,8.5)
 
     # Clean up
     plt.tight_layout()
@@ -464,7 +468,7 @@ def plot_figure_4_behavioral_inner(dfs,data='filtered_events',savefig=False,\
             experience_level = experience_level +'_'+'_'.join(areas)
         if meso:
             filename = PSTH_DIR + data + '/population_averages/'+\
-                'figure_4_comparisons_psth_meso_'+experience_level+'.svg'        
+                'figure_4_comparisons_psth_meso_'+experience_level+'.png'        
         else:
             filename = PSTH_DIR + data + '/population_averages/'+\
                 'figure_4_comparisons_psth_'+experience_level+'.svg' 
