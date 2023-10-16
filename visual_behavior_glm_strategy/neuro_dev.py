@@ -264,13 +264,22 @@ sst_omission = psth.load_omission_df(summary_df, cre='Sst-IRES-Cre',data='events
 bootstraps_omission = psth.get_running_bootstraps('sst','omission','events',10000)
 psth.running_responses(sst_omission, 'omission',bootstraps=bootstraps_omission,cre='sst')
 
-exc_image = psth.load_image_df(summary_df, cre='Slc17a7-IRES2-Cre',data='events')
-bootstraps_image = psth.get_running_bootstraps('exc','image','events',10000)
-psth.running_responses(exc_image, 'image',bootstraps=bootstraps_image,cre='exc')
+exc_image = psth.load_image_df(summary_df, cre='Slc17a7-IRES2-Cre',data='events',
+    meso=True, first=False, second=False, image=True)
+bootstraps_image = psth.get_running_bootstraps('exc','image','events',10000,
+    meso=True, first=False, second=False, image=True)
+psth.running_responses(exc_image, 'image',bootstraps=bootstraps_image,cre='exc',meso=True)
 
-exc_omission = psth.load_omission_df(summary_df, cre='Slc17a7-IRES2-Cre',data='events')
-bootstraps_omission = psth.get_running_bootstraps('exc','omission','events',10000)
+exc_omission = psth.load_omission_df(summary_df, cre='Slc17a7-IRES2-Cre',data='events',
+    meso=True, first=False, second=False, image=True)
+bootstraps_omission = psth.get_running_bootstraps('exc','omission','events',10000,
+    meso=True, first=False, second=False, image=True)
 psth.running_responses(exc_omission, 'omission',bootstraps=bootstraps_omission,cre='exc')
+
+exc_change = psth.load_change_df(summary_df, cre='Slc17a7-IRES2-Cre',data='events',
+    first=False, second=False, image=True,meso=True)
+psth.running_responses(exc_change.query('hit==1'), 'hit',bootstraps=bootstraps_omission,cre='exc')
+psth.running_responses(exc_change.query('miss==1'), 'miss',bootstraps=bootstraps_omission,cre='exc')
 
 
 

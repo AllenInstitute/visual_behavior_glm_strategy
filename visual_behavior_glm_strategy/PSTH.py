@@ -1723,9 +1723,10 @@ def compute_engagement_running_bootstrap(df,condition,cell_type,strategy,
     return bootstraps
 
 
-def get_running_bootstraps(cell_type, condition,data,nboots,meso=False,first=False,second=False):
+def get_running_bootstraps(cell_type, condition,data,nboots,meso=False,first=False,second=False,
+    image=False):
     filepath = get_hierarchy_filename(cell_type,condition,data,'all',nboots,
-        ['visual_strategy_session'],'running',meso=meso,first=first,second=second) 
+        ['visual_strategy_session'],'running',meso=meso,first=first,second=second,image=image) 
     if os.path.isfile(filepath):
         bootstraps = pd.read_feather(filepath)
         return bootstraps
@@ -1882,7 +1883,7 @@ def pre_change_running_responses_compare_strategy(df, condition, cre='vip', boot
         marker='o'
     elif change_type == 'miss':
         df = df.query('(pre_miss_1==1)').copy()
-        marker='x'
+        marker='o'
     df['running_bins'] = np.floor(df['running_speed']/bin_width)
 
     summary = df.groupby(['visual_strategy_session','running_bins'])['response'].mean()\
@@ -3619,7 +3620,7 @@ def add_hochberg_correction(table):
     return table
 
 def get_hierarchy_filename(cell_type, response, data, depth, nboots, splits, extra,
-    first=False,second=False,meso=False):
+    first=False,second=False,meso=False,image=False):
     filepath = PSTH_DIR + data +'/bootstraps/' +\
         '_'.join([cell_type,response,depth,str(nboots)]+splits)
     if extra != '':
@@ -3628,6 +3629,8 @@ def get_hierarchy_filename(cell_type, response, data, depth, nboots, splits, ext
         filepath += '_first'
     if second:
         filepath += '_second'
+    if image:
+        filepath += '_image'
     if meso:
         filepath += '_meso'
     filepath = filepath+'.feather'
@@ -3638,6 +3641,7 @@ def get_hierarchy(cell_type, response, data, depth, nboots,splits=[],extra='',
     '''
         loads the dataframe from file
     '''
+    raise Exception(" I think this is outdated")
     filepath = get_hierarchy_filename(cell_type,response,data,depth,nboots,
         splits,extra,first,second)
     if os.path.isfile(filepath):
@@ -3955,9 +3959,11 @@ def load_image_and_change_df(summary_df, cre,data='events',first=False,second=Fa
         'binned_depth']],on='ophys_experiment_id')
     return df
 
-def load_omission_df(summary_df, cre, data='events',first=False,second=False,meso=False):
+def load_omission_df(summary_df, cre, data='events',first=False,second=False,
+    meso=False,image=False):
+    
     # load everything
-    df = bd.load_population_df(data,'image_df',cre,first=first,second=second)
+    df = bd.load_population_df(data,'image_df',cre,first=first,second=second,image=image)
     
     # drop omissions
     df.drop(df[~df['omitted']].index,inplace=True)
