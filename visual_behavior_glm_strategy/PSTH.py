@@ -1143,11 +1143,11 @@ def plot_strategy_histogram(full_df,cre,condition,experience_level,savefig=False
     return ax
 
 def compute_running_bootstrap_bin(df, condition, cell_type, bin_num, nboots=10000,
-    data='events',meso=False,first=False, second=False):
+    data='events',meso=False,first=False, second=False,image=False):
 
     filename = get_hierarchy_filename(cell_type,condition,data,'all',nboots,
         ['visual_strategy_session'],'running_{}'.format(bin_num),
-        meso=meso,first=first,second=second)  
+        meso=meso,first=first,second=second,image=image)  
 
     if os.path.isfile(filename):
         print('Already computed {}'.format(bin_num))
@@ -1157,7 +1157,9 @@ def compute_running_bootstrap_bin(df, condition, cell_type, bin_num, nboots=1000
     if condition =='omission':
         bin_width=5        
     elif condition =='image':
-        bin_width=5#2   
+        bin_width=5#2  
+    else:
+        bin_width=5 
     df['running_bins'] = np.floor(df['running_speed']/bin_width)
     bins = np.sort(df['running_bins'].unique())  
 
@@ -1197,17 +1199,21 @@ def compute_running_bootstrap_bin(df, condition, cell_type, bin_num, nboots=1000
     # Save to file
     filename = get_hierarchy_filename(cell_type,condition,data,'all',nboots,
         ['visual_strategy_session'],'running_{}'.format(bin_num),meso=meso,
-        first=first,second=second)
+        first=first,second=second,image=image)
     with open(filename,'wb') as handle:
         pickle.dump(bootstrap, handle, protocol=pickle.HIGHEST_PROTOCOL)
     print('bin saved to {}'.format(filename)) 
 
 def compute_running_bootstrap(df,condition,cell_type,nboots=10000,data='events',
-    compute=True,split='visual_strategy_session',meso=False,first=False,second=False):
+    compute=True,split='visual_strategy_session',meso=False,first=False,second=False,
+    image=False):
+
     if condition =='omission':
         bin_width=5        
     elif condition =='image':
         bin_width=5#2   
+    else:
+        bin_width=5
     df['running_bins'] = np.floor(df['running_speed']/bin_width)
 
     bootstraps = []
@@ -1216,7 +1222,8 @@ def compute_running_bootstrap(df,condition,cell_type,nboots=10000,data='events',
     for b in bins:
         # First check if this running bin has already been computed
         filename = get_hierarchy_filename(cell_type,condition,data,'all',nboots,
-            [split],'running_{}'.format(int(b)),meso=meso,first=first,second=second)
+            [split],'running_{}'.format(int(b)),meso=meso,first=first,second=second,
+            image=image)
         if os.path.isfile(filename):
             # Load this bin
             with open(filename,'rb') as handle:
@@ -1268,7 +1275,8 @@ def compute_running_bootstrap(df,condition,cell_type,nboots=10000,data='events',
     # Save file
     if not missing:
         filepath = get_hierarchy_filename(cell_type,condition,data,'all',nboots,
-            ['visual_strategy_session'],'running',meso=meso,first=first,second=second)
+            ['visual_strategy_session'],'running',meso=meso,first=first,second=second,
+            image=image)
         print('saving bootstraps to: '+filepath)
         bootstraps.to_feather(filepath)
     return bootstraps
@@ -3430,7 +3438,11 @@ def bootstrap_significance(bootstrap, k1, k2):
 
 
 def load_df_and_compute_running(summary_df, cell_type, response, data, nboots, 
-    bin_num,meso=False,first=False, second=False):
+    bin_num,meso=False,first=False, second=False,image=False):
+    if first & image:
+        raise Exception('cannot have both first and image')
+    if second & image:
+        raise Exception('cannot have both second and image')
 
     mapper = {
         'exc':'Slc17a7-IRES2-Cre',
@@ -3439,12 +3451,25 @@ def load_df_and_compute_running(summary_df, cell_type, response, data, nboots,
         }
     if response == 'image':
         df = load_image_df(summary_df, mapper[cell_type], data,
-            meso=meso,first=first, second=second)
+            meso=meso,first=first, second=second,image=image)
     elif response == 'omission':
         df = load_omission_df(summary_df, mapper[cell_type], data,
-            meso=meso,first=first,second=second)
+            meso=meso,first=first,second=second,image=image)
+    elif response == 'hit':
+        df = load_change_df(summary_df, mapper[cell_type], data,
+            meso=meso,first=first,second=second,image=image)
+        df=df.query('hit == 1').copy()
+    elif response == 'miss':
+        df = load_change_df(summary_df, mapper[cell_type], data,
+            meso=meso,first=first,second=second,image=image)
+        df=df.query('miss == 1').copy()
+    elif response == 'post_omission':
+        df = load_image_df(summary_df, mapper[cell_type], data,
+            meso=meso,first=first, second=second,image=image)
+        df=df.query('post_omitted_1').copy()
+
     compute_running_bootstrap_bin(df,response, cell_type, bin_num, nboots=nboots,
-            meso=meso,first=first,second=second)
+            meso=meso,first=first,second=second,image=image)
 
 def load_df_and_compute_engagement_running(summary_df, cell_type, response, data, 
     nboots, bin_num,meso=False,first=False,second=False):

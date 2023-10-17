@@ -1,4 +1,4 @@
-import visual_behavior_glm.PSTH as psth
+import visual_behavior_glm_strategy.PSTH as psth
 import psy_output_tools as po
 import argparse
 
@@ -41,7 +41,27 @@ parser.add_argument(
     metavar='',
     help='data'
 )
-
+parser.add_argument(
+    '--first', 
+    type=str, 
+    default='False',
+    metavar='',
+    help='data'
+)
+parser.add_argument(
+    '--second', 
+    type=str, 
+    default='False',
+    metavar='',
+    help='data'
+)
+parser.add_argument(
+    '--image', 
+    type=str, 
+    default='False',
+    metavar='',
+    help='data'
+)
 
 if __name__ == '__main__':
     args = parser.parse_args()
@@ -50,10 +70,12 @@ if __name__ == '__main__':
     print('response  {}'.format(args.response))
     print('data      {}'.format(args.data))
     print('nboots    {}'.format(args.nboots))
-    print('bin_num   {}'.format(args.bin_num))
+    print('first   {}'.format(args.first))
+    print('second   {}'.format(args.second))
+    print('image   {}'.format(args.image))
     print('')
     summary_df = po.get_ophys_summary_table(21)
-    psth.load_df_and_compute_engagement_running(
+    psth.load_df_and_compute_running(
         summary_df,
         args.cell_type,
         args.response,
@@ -61,8 +83,9 @@ if __name__ == '__main__':
         args.nboots,
         args.bin_num,
         meso=True,
-        first=False,
-        second=False
+        first=args.first == 'True',
+        second=args.second == 'True',
+        image=args.image == 'True'
         )
     print('finished') 
 

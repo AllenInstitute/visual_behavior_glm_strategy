@@ -212,7 +212,7 @@ exc_post=exc_image.query('post_omitted_1').copy()
 psth.plot_summary_bootstrap_strategy_engaged_omission(exc_post,data='events',nboots=10000,
     cell_type='exc',first=False,second=False,post=True,meso=True,image=True)
 
-## Fig. S6 - Running VIP control image
+## Fig. S6 - Engagement Running VIP control image
 ################################################################################
 vip_image = psth.load_image_df(summary_df, cre='Vip-IRES-Cre',data='events',
     second=True,meso=True)
@@ -226,7 +226,7 @@ psth.engagement_running_responses(vip_image, 'image',vis_boots=boot_image_visual
     tim_boots=boot_image_timing, plot_list=['timing'],meso=True,second=True)
 
 
-## Fig. S6 - Running VIP control Omission
+## Fig. S6 - Engagement Running VIP control Omission
 ################################################################################
 vip_omission = psth.load_omission_df(summary_df, cre='Vip-IRES-Cre',data='events',
     meso=True)
