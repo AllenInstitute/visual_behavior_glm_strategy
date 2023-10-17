@@ -107,7 +107,7 @@ vip_image_filtered = bd.load_population_df('filtered_events','image_df','Vip-IRE
 vip_full_filtered = bd.load_population_df('filtered_events','full_df','Vip-IRES-Cre')
 
 
-## Running controls
+## EXC Running controls
 ################################################################################
 
 exc_image = psth.load_image_df(summary_df, cre='Slc17a7-IRES2-Cre',data='events',
@@ -117,10 +117,10 @@ bootstraps_image = psth.compute_running_bootstrap(exc_image,'image','exc',data='
 psth.running_responses(exc_image, 'image',cre='exc',bootstraps=bootstraps_image)
 
 exc_post=exc_image.query('post_omitted_1').copy()
-bootstraps_post_omission = psth.compute_running_bootstrap(exc_post_omission,'post_omission','exc',
-    data='events',nboots=nboots,meso=True, first=False, second=False, post_omission=True,
+bootstraps_post_omission = psth.compute_running_bootstrap(exc_post,'post_omission','exc',
+    data='events',nboots=nboots,meso=True, first=False, second=False, image=True,
     compute=False)
-psth.running_responses(exc_post_omission, 'post_omission',cre='exc',
+psth.running_responses(exc_post, 'post_omission',cre='exc',
     bootstraps=bootstraps_post_omission)
 
 exc_omission = psth.load_omission_df(summary_df, cre='Slc17a7-IRES2-Cre',data='events',
@@ -140,6 +140,43 @@ exc_miss = exc_change.query('miss==1').copy()
 bootstraps_miss = psth.compute_running_bootstrap(exc_miss, 'miss','exc',data='events',
     nboots=nboots, meso=True, first=False, second=False, image=True, compute=False)
 psth.running_responses(exc_miss, 'miss',cre='exc',bootstraps=bootstraps_miss)
+
+## Sst Running controls
+################################################################################
+
+sst_image = psth.load_image_df(summary_df, cre='Sst-IRES-Cre',data='events',
+    first=False, second=False, image=True, meso=True)
+bootstraps_image = psth.compute_running_bootstrap(sst_image,'image','sst',data='events',
+    nboots=nboots,meso=True, first=False, second=False, image=True,compute=False)
+psth.running_responses(sst_image, 'image',cre='sst',bootstraps=bootstraps_image)
+
+sst_post=sst_image.query('post_omitted_1').copy()
+bootstraps_post_omission = psth.compute_running_bootstrap(sst_post,'post_omission','sst',
+    data='events',nboots=nboots,meso=True, first=False, second=False, image=True,
+    compute=False)
+psth.running_responses(sst_post, 'post_omission',cre='sst',
+    bootstraps=bootstraps_post_omission)
+
+sst_omission = psth.load_omission_df(summary_df, cre='Sst-IRES-Cre',data='events',
+    meso=True, first=False, second=True, image=False)
+bootstraps_omission = psth.compute_running_bootstrap(sst_omission,'omission','sst',data='events',
+    nboots=nboots,meso=True, first=False, second=True, image=False,compute=False)
+psth.running_responses(sst_omission, 'omission',cre='sst',bootstraps=bootstraps_omission)
+
+sst_change = psth.load_change_df(summary_df, cre='Sst-IRES-Cre',data='events',
+    meso=True, first=False, second=True, image=False)
+sst_hit = sst_change.query('hit==1').copy()
+bootstraps_hit = psth.compute_running_bootstrap(sst_hit, 'hit','sst',data='events',
+    nboots=nboots, meso=True, first=False, second=True, image=False, compute=False)
+psth.running_responses(sst_hit, 'hit',cre='sst',bootstraps=bootstraps_hit)
+
+sst_miss = sst_change.query('miss==1').copy()
+bootstraps_miss = psth.compute_running_bootstrap(sst_miss, 'miss','sst',data='events',
+    nboots=nboots, meso=True, first=False, second=True, image=False, compute=False)
+psth.running_responses(sst_miss, 'miss',cre='sst',bootstraps=bootstraps_miss)
+
+## Vip Running controls/Dev
+################################################################################
 
 
 # Load image_dfs 

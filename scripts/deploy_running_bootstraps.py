@@ -28,12 +28,13 @@ def already_fit(row):
 def get_bootstrap_jobs():
     nboots=10000
     base_jobs = [
-        {'cell_type':'exc','response':'image','data':'events','nboots':nboots,'first':False,'second':False,'image':True}, 
-        {'cell_type':'exc','response':'omission','data':'events','nboots':nboots,'first':False,'second':False,'image':True},
-        {'cell_type':'exc','response':'post_omission','data':'events','nboots':nboots,'first':False,'second':False,'image':True},
-        {'cell_type':'exc','response':'hit','data':'events','nboots':nboots,'first':False,'second':False,'image':True},
-        {'cell_type':'exc','response':'miss','data':'events','nboots':nboots,'first':False,'second':False,'image':True},
-        #{'cell_type':'sst','response':'image','data':'events','nboots':nboots},
+        #{'cell_type':'exc','response':'image','data':'events','nboots':nboots,'first':False,'second':False,'image':True}, 
+        #{'cell_type':'exc','response':'omission','data':'events','nboots':nboots,'first':False,'second':False,'image':True},
+        #{'cell_type':'exc','response':'post_omission','data':'events','nboots':nboots,'first':False,'second':False,'image':True},
+        #{'cell_type':'exc','response':'hit','data':'events','nboots':nboots,'first':False,'second':False,'image':True},
+        #{'cell_type':'exc','response':'miss','data':'events','nboots':nboots,'first':False,'second':False,'image':True},
+        #{'cell_type':'sst','response':'image','data':'events','nboots':nboots,'first':False,'second':False, 'image':True},
+        {'cell_type':'sst','response':'post_omission','data':'events','nboots':nboots,'first':False,'second':False, 'image':True},
         #{'cell_type':'vip','response':'image','data':'events','nboots':nboots}, 
         #{'cell_type':'sst','response':'omission','data':'events','nboots':nboots},
         #{'cell_type':'vip','response':'omission','data':'events','nboots':nboots},
