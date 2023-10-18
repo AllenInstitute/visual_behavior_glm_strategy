@@ -1763,7 +1763,7 @@ def get_pre_change_running_bootstraps(cell_type, condition,data,nboots,strategy)
         print(filepath)
 
 def running_responses(df, condition, cre='vip', bootstraps=None, savefig=False,
-    data='events', split='visual_strategy_session',meso=False,ax=None):
+    data='events', split='visual_strategy_session',meso=False,ax=None,show_mc_insignificant=False):
     if condition =='omission':
         bin_width=5        
     elif condition =='image':
@@ -1843,6 +1843,8 @@ def running_responses(df, condition, cre='vip', bootstraps=None, savefig=False,
         ax.set_ylim(0,.07) 
     elif (cre == 'vip') and (condition =='image'):
         ax.set_ylim(0,.02)
+    elif (cre == 'exc') and (condition == 'image'):
+        ax.set_ylim(0,.0075)
     else:
         ax.set_ylim(bottom=0)
 
@@ -1854,7 +1856,10 @@ def running_responses(df, condition, cre='vip', bootstraps=None, savefig=False,
                 if row.remove:
                     print('Not significant b/c of low count: {}'.format(row.running_bin))
                 else:
-                    ax.plot(row.running_bin*bin_width, y, 'k*')  
+                    ax.plot(row.running_bin*bin_width, y, 'k*') 
+            elif show_mc_insignificant and (row.p_boot < 0.05):
+                    ax.plot(row.running_bin*bin_width, y, 'o',markerfacecolor='None',
+                        markeredgecolor='k') 
         ax.set_ylim(top=y*1.075)
 
     ax.set_xlim(-1,51)
@@ -1874,7 +1879,7 @@ def running_responses(df, condition, cre='vip', bootstraps=None, savefig=False,
         plt.savefig(filename)
 
 def pre_change_running_responses_compare_strategy(df, condition, cre='vip', bootstraps=None, 
-    savefig=False, data='events', change_type='hit'):
+    savefig=False, data='events', change_type='hit',show_mc_insignificant=False):
     if condition =='omission':
         bin_width=5        
     elif condition =='image':
@@ -1958,6 +1963,9 @@ def pre_change_running_responses_compare_strategy(df, condition, cre='vip', boot
                     print('Not significant b/c of low count: {}'.format(row.running_bin))
                 else:
                     ax.plot(row.running_bin*bin_width, y, 'k*')  
+            elif show_mc_insignificant and (row.p_boot < 0.05):
+                    ax.plot(row.running_bin*bin_width, y, 'o',markerfacecolor='None',
+                        markeredgecolor='k') 
         ax.set_ylim(top=y*1.075)
 
     ax.set_xlim(-1,51)

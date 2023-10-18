@@ -34,7 +34,10 @@ def get_bootstrap_jobs():
         #{'cell_type':'exc','response':'hit','data':'events','nboots':nboots,'first':False,'second':False,'image':True},
         #{'cell_type':'exc','response':'miss','data':'events','nboots':nboots,'first':False,'second':False,'image':True},
         #{'cell_type':'sst','response':'image','data':'events','nboots':nboots,'first':False,'second':False, 'image':True},
-        {'cell_type':'sst','response':'post_omission','data':'events','nboots':nboots,'first':False,'second':False, 'image':True},
+        #{'cell_type':'sst','response':'post_omission','data':'events','nboots':nboots,'first':False,'second':False, 'image':True},
+        {'cell_type':'sst','response':'omission','data':'events','nboots':nboots,'first':False,'second':True, 'image':False},
+        {'cell_type':'sst','response':'hit','data':'events','nboots':nboots,'first':False,'second':True, 'image':False},
+        {'cell_type':'sst','response':'miss','data':'events','nboots':nboots,'first':False,'second':True, 'image':False},
         #{'cell_type':'vip','response':'image','data':'events','nboots':nboots}, 
         #{'cell_type':'sst','response':'omission','data':'events','nboots':nboots},
         #{'cell_type':'vip','response':'omission','data':'events','nboots':nboots},
@@ -57,8 +60,8 @@ def make_job_string(row):
     arg_string += ' --bin_num {}'.format(row.bin_num)
     arg_string += ' --nboots {}'.format(row.nboots)
     arg_string += ' --first {}'.format(bool(False)) 
-    arg_string += ' --second {}'.format(bool(False)) 
-    arg_string += ' --image {}'.format(bool(True))
+    arg_string += ' --second {}'.format(bool(True)) 
+    arg_string += ' --image {}'.format(bool(False))
     return arg_string
 
 if __name__ == "__main__":
@@ -83,7 +86,7 @@ if __name__ == "__main__":
             print('starting cluster job. job count = {}'.format(job_count))
             print('   ' + args_string)
             job_title = 'bootstraps'
-            walltime = '10:00:00'
+            walltime = '20:00:00'
             mem = '100gb'
             job_id = Slurm.JOB_ARRAY_ID
             job_array_id = Slurm.JOB_ARRAY_MASTER_ID
