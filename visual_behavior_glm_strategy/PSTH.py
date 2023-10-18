@@ -566,7 +566,7 @@ def plot_figure_4_averages_vip_matched_behavior(data='running',experience_level=
 
 
 def plot_figure_4_averages_vip_matched(dfs=None,ylims=None, savefig=False,
-    experience_level='Familiar',meso=True):
+    experience_level='Familiar',meso=True,plot_comparison=False):
 
     if (dfs is None):
         dfs = get_figure_4_psth(data='events',mesoscope_only=True)
@@ -599,7 +599,17 @@ def plot_figure_4_averages_vip_matched(dfs=None,ylims=None, savefig=False,
     ax[0,0].set_xlabel('time from omission (s)',fontsize=16)
     ax[0,1].set_xlabel('time from hit (s)',fontsize=16)
     ax[0,2].set_xlabel('time from miss (s)',fontsize=16)
-    plt.tight_layout()
+    if plot_comparison:
+        max_y[0] = plot_condition_experience(dfs[2], 'omission', experience_level,
+            strategy, ax=ax[0,0], ylabel=ylabel,plot_strategy='timing',
+            error_type=error_type,areas=areas,depths=depths,depth=depth)
+        max_y[1] = plot_condition_experience(dfs[2], 'hit', experience_level,
+            strategy, ax=ax[0,1],ylabel='',plot_strategy='timing',
+            error_type=error_type,areas=areas,depths=depths,depth=depth)
+        max_y[2] = plot_condition_experience(dfs[2], 'miss', experience_level,
+            strategy, ax=ax[0,2],ylabel='',plot_strategy='timing',
+            error_type=error_type,areas=areas,depths=depths,depth=depth)
+
 
     plt.tight_layout()
     if savefig:
