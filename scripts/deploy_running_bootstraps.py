@@ -4,7 +4,7 @@ import time
 import pandas as pd
 
 from simple_slurm import Slurm
-import visual_behavior_glm.PSTH as psth
+import visual_behavior_glm_strategy.PSTH as psth
 
 parser = argparse.ArgumentParser(description='deploy glm fits to cluster')
 parser.add_argument('--env-path', type=str, default='visual_behavior', metavar='path to conda environment to use')
@@ -18,45 +18,30 @@ def already_fit(row):
         'all',
         row.nboots,
         ['visual_strategy_session'],
-        'running_engaged_{}_{}'.format('visual',row.bin_num),
+        'running_{}'.format(row.bin_num),
         meso=True,
-        first=False,
-        second=False)
-    filename2 = psth.get_hierarchy_filename(
-        row.cell_type,
-        row.response,
-        row['data'],
-        'all',
-        row.nboots,
-        ['visual_strategy_session'],
-        'running_engaged_{}_{}'.format('timing',row.bin_num),
-        meso=True,
-        first=False,
-        second=False)
-    return os.path.exists(filename1) & os.path.exists(filename2)
-    #filename = psth.get_hierarchy_filename(
-    #    row.cell_type,
-    #    row.response,
-    #    row['data'],
-    #    'all',
-    #    row.nboots,
-    #    ['visual_strategy_session'],
-    #    'running_engaged_{}_{}'.format('timing',row.bin_num),
-    #    meso=True,
-    #    first=False,
-    #    second=True)
-    #return os.path.exists(filename)
+        first=row.first,
+        second=row.second,
+        image=row.image)
+    return os.path.exists(filename1) 
 
 def get_bootstrap_jobs():
     nboots=10000
     base_jobs = [
-        #{'cell_type':'exc','response':'image','data':'events','nboots':nboots}, 
-        #{'cell_type':'sst','response':'image','data':'events','nboots':nboots},
+        #{'cell_type':'exc','response':'image','data':'events','nboots':nboots,'first':False,'second':False,'image':True}, 
+        #{'cell_type':'exc','response':'omission','data':'events','nboots':nboots,'first':False,'second':False,'image':True},
+        #{'cell_type':'exc','response':'post_omission','data':'events','nboots':nboots,'first':False,'second':False,'image':True},
+        #{'cell_type':'exc','response':'hit','data':'events','nboots':nboots,'first':False,'second':False,'image':True},
+        #{'cell_type':'exc','response':'miss','data':'events','nboots':nboots,'first':False,'second':False,'image':True},
+        #{'cell_type':'sst','response':'image','data':'events','nboots':nboots,'first':False,'second':False, 'image':True},
+        #{'cell_type':'sst','response':'post_omission','data':'events','nboots':nboots,'first':False,'second':False, 'image':True},
+        {'cell_type':'sst','response':'omission','data':'events','nboots':nboots,'first':False,'second':True, 'image':False},
+        {'cell_type':'sst','response':'hit','data':'events','nboots':nboots,'first':False,'second':True, 'image':False},
+        {'cell_type':'sst','response':'miss','data':'events','nboots':nboots,'first':False,'second':True, 'image':False},
         #{'cell_type':'vip','response':'image','data':'events','nboots':nboots}, 
-        #{'cell_type':'exc','response':'omission','data':'events','nboots':nboots},
         #{'cell_type':'sst','response':'omission','data':'events','nboots':nboots},
         #{'cell_type':'vip','response':'omission','data':'events','nboots':nboots},
-        {'cell_type':'vip','response':'pre_change','data':'events','nboots':nboots}
+        #{'cell_type':'vip','response':'pre_change','data':'events','nboots':nboots}
         ]
     jobs = []
     for b in range(-5,21):
@@ -73,14 +58,17 @@ def make_job_string(row):
     arg_string += ' --response {}'.format(row.response)
     arg_string += ' --data {}'.format(row['data'])
     arg_string += ' --bin_num {}'.format(row.bin_num)
-    arg_string += ' --nboots {}'.format(row.nboots) 
+    arg_string += ' --nboots {}'.format(row.nboots)
+    arg_string += ' --first {}'.format(bool(False)) 
+    arg_string += ' --second {}'.format(bool(True)) 
+    arg_string += ' --image {}'.format(bool(False))
     return arg_string
 
 if __name__ == "__main__":
     args = parser.parse_args()
     python_executable = "{}/bin/python".format(args.env_path)
     print('python executable = {}'.format(python_executable))
-    python_file = "/home/alex.piet/codebase/GLM/visual_behavior_glm/scripts/running_bootstrap.py"  
+    python_file = "/home/alex.piet/codebase/GLM/visual_behavior_glm_strategy/scripts/running_bootstrap.py"  
     stdout_basedir = "/allen/programs/braintv/workgroups/nc-ophys/visual_behavior/ophys_glm" 
     stdout_location = os.path.join(stdout_basedir, 'job_records_running_bootstraps')
     if not os.path.exists(stdout_location):
@@ -98,8 +86,8 @@ if __name__ == "__main__":
             print('starting cluster job. job count = {}'.format(job_count))
             print('   ' + args_string)
             job_title = 'bootstraps'
-            walltime = '5:00:00'
-            mem = '50gb'
+            walltime = '20:00:00'
+            mem = '100gb'
             job_id = Slurm.JOB_ARRAY_ID
             job_array_id = Slurm.JOB_ARRAY_MASTER_ID
             output = stdout_location+"/"+str(job_array_id)+"_"+str(job_id)+"_bootstrap.out"

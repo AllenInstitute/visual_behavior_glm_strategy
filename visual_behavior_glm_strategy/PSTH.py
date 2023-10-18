@@ -422,6 +422,8 @@ def plot_figure_4_behavioral_inner(dfs,data='filtered_events',savefig=False,\
             ylabel=labels[index] + '\n running (z-score)'
         elif data == 'pupil_zscore':
             ylabel=labels[index] + '\n pupil (z-score)'
+        elif data == 'running':
+            ylabel=labels[index] + '\n running (cm/s)'
         else:
             ylabel=labels[index] +'\n({})'.format(data)
         max_y[0] = plot_condition_experience(full_df, 'omission', experience_level,
@@ -451,11 +453,19 @@ def plot_figure_4_behavioral_inner(dfs,data='filtered_events',savefig=False,\
     if data == 'running_zscore':
         for a in ax:
             for b in a:
-               b.set_ylim(-1.75,1)
+                b.set_ylim(-1.75,1)
+    elif data == 'running':
+        for a in ax:
+            for b in a:
+                b.set_ylim(0,35)
     elif data == 'pupil_zscore':
         for a in ax:
             for b in a:
-               b.set_ylim(-1,1)
+                b.set_ylim(-1,1)
+    elif data == 'licks':
+        for a in ax:
+            for b in a:
+                b.set_ylim(0,8.5)
 
     # Clean up
     plt.tight_layout()
@@ -464,7 +474,88 @@ def plot_figure_4_behavioral_inner(dfs,data='filtered_events',savefig=False,\
             experience_level = experience_level +'_'+'_'.join(areas)
         if meso:
             filename = PSTH_DIR + data + '/population_averages/'+\
-                'figure_4_comparisons_psth_meso_'+experience_level+'.svg'        
+                'figure_4_comparisons_psth_meso_'+experience_level+'.png'        
+        else:
+            filename = PSTH_DIR + data + '/population_averages/'+\
+                'figure_4_comparisons_psth_'+experience_level+'.svg' 
+        print('Figure saved to: '+filename)
+        plt.savefig(filename)
+    return ylims
+
+def plot_figure_4_averages_vip_matched_behavior(data='running',experience_level='Familiar',
+    savefig=False, meso=True):
+    dfs = get_figure_4_behavioral(data)
+    # Vip mouse ids excluding three low running mice
+    mouse_ids = [528097,453991, 435431, 523922, 453989, 438912]
+    full_df = dfs[2].query('mouse_id in @mouse_ids').copy()    
+
+    fig, ax = plt.subplots(1,4,figsize=(13,2.7),sharey='row',squeeze=False) 
+    label='Vip Inhibitory'
+    error_type='sem'
+    strategy='visual_strategy_session'
+    areas=['behavior']
+    depths=['behavior']
+    full_df['targeted_structure'] = 'behavior'
+    full_df['layer'] = 'behavior' 
+    ylims = [0,0,0,0]
+    max_y = [0,0,0,0]
+    if data in ['events','filtered_events']:
+        ylabel=label +'\n(Ca$^{2+}$ events)'
+    elif data == 'licks':
+        ylabel=label +'\n(licks/s)'
+    elif data == 'running_zscore':
+        ylabel=label + '\n running (z-score)'
+    elif data == 'pupil_zscore':
+        ylabel=label + '\n pupil (z-score)'
+    elif data == 'running':
+        ylabel=label + '\n running (cm/s)'
+    else:
+        ylabel=label +'\n({})'.format(data)
+    max_y[0] = plot_condition_experience(full_df, 'omission', experience_level,
+        strategy, ax=ax[0,0], ylabel=ylabel,
+        error_type=error_type,areas=areas,depths=depths)
+    max_y[1] = plot_condition_experience(full_df, 'hit', experience_level,
+        strategy, ax=ax[0,1],ylabel='',
+        error_type=error_type,areas=areas,depths=depths)
+    max_y[2] = plot_condition_experience(full_df, 'miss', experience_level,
+        strategy, ax=ax[0,2],ylabel='',
+        error_type=error_type,areas=areas,depths=depths)
+    max_y[3] = plot_condition_experience(full_df, 'image_fa', experience_level,
+        strategy, ax=ax[0,3],ylabel='',
+        error_type=error_type,areas=areas,depths=depths)
+    ax[0,0].set_ylim(top = 1.05*np.max(max_y))
+    ylim = 1.05*np.max(max_y)
+
+    ax[0,0].set_xlabel('time from omission (s)',fontsize=16)
+    ax[0,1].set_xlabel('time from hit (s)',fontsize=16)
+    ax[0,2].set_xlabel('time from miss (s)',fontsize=16)
+    ax[0,3].set_xlabel('time from false alarm (s)',fontsize=16)
+
+    if data == 'running_zscore':
+        for a in ax:
+            for b in a:
+                b.set_ylim(-1.75,1)
+    elif data == 'running':
+        for a in ax:
+            for b in a:
+                b.set_ylim(0,35)
+    elif data == 'pupil_zscore':
+        for a in ax:
+            for b in a:
+                b.set_ylim(-1,1)
+    elif data == 'licks':
+        for a in ax:
+            for b in a:
+                b.set_ylim(0,8.5)
+
+    # Clean up
+    plt.tight_layout()
+    if savefig:
+        if ('VISp' not in areas) | ('VISl' not in areas):
+            experience_level = experience_level +'_'+'_'.join(areas)
+        if meso:
+            filename = PSTH_DIR + data + '/population_averages/'+\
+                'figure_4_comparisons_psth_meso_vip_matched'+experience_level+'.svg'        
         else:
             filename = PSTH_DIR + data + '/population_averages/'+\
                 'figure_4_comparisons_psth_'+experience_level+'.svg' 
@@ -473,9 +564,11 @@ def plot_figure_4_behavioral_inner(dfs,data='filtered_events',savefig=False,\
     return ylims
 
 
-def plot_figure_4_averages_vip_matched(dfs=None,ylims=None, savefig=False,experience_level='Familiar',
-    meso=True):
-    if (ylims is None) or (dfs is None):
+
+def plot_figure_4_averages_vip_matched(dfs=None,ylims=None, savefig=False,
+    experience_level='Familiar',meso=True):
+
+    if (dfs is None):
         dfs = get_figure_4_psth(data='events',mesoscope_only=True)
         ylims = plot_figure_4_averages(dfs, data='events',meso=True) 
 
@@ -1050,11 +1143,11 @@ def plot_strategy_histogram(full_df,cre,condition,experience_level,savefig=False
     return ax
 
 def compute_running_bootstrap_bin(df, condition, cell_type, bin_num, nboots=10000,
-    data='events',meso=False,first=False, second=False):
+    data='events',meso=False,first=False, second=False,image=False):
 
     filename = get_hierarchy_filename(cell_type,condition,data,'all',nboots,
         ['visual_strategy_session'],'running_{}'.format(bin_num),
-        meso=meso,first=first,second=second)  
+        meso=meso,first=first,second=second,image=image)  
 
     if os.path.isfile(filename):
         print('Already computed {}'.format(bin_num))
@@ -1064,7 +1157,9 @@ def compute_running_bootstrap_bin(df, condition, cell_type, bin_num, nboots=1000
     if condition =='omission':
         bin_width=5        
     elif condition =='image':
-        bin_width=5#2   
+        bin_width=5#2  
+    else:
+        bin_width=5 
     df['running_bins'] = np.floor(df['running_speed']/bin_width)
     bins = np.sort(df['running_bins'].unique())  
 
@@ -1104,17 +1199,21 @@ def compute_running_bootstrap_bin(df, condition, cell_type, bin_num, nboots=1000
     # Save to file
     filename = get_hierarchy_filename(cell_type,condition,data,'all',nboots,
         ['visual_strategy_session'],'running_{}'.format(bin_num),meso=meso,
-        first=first,second=second)
+        first=first,second=second,image=image)
     with open(filename,'wb') as handle:
         pickle.dump(bootstrap, handle, protocol=pickle.HIGHEST_PROTOCOL)
     print('bin saved to {}'.format(filename)) 
 
 def compute_running_bootstrap(df,condition,cell_type,nboots=10000,data='events',
-    compute=True,split='visual_strategy_session',meso=False,first=False,second=False):
+    compute=True,split='visual_strategy_session',meso=False,first=False,second=False,
+    image=False):
+
     if condition =='omission':
         bin_width=5        
     elif condition =='image':
         bin_width=5#2   
+    else:
+        bin_width=5
     df['running_bins'] = np.floor(df['running_speed']/bin_width)
 
     bootstraps = []
@@ -1123,7 +1222,8 @@ def compute_running_bootstrap(df,condition,cell_type,nboots=10000,data='events',
     for b in bins:
         # First check if this running bin has already been computed
         filename = get_hierarchy_filename(cell_type,condition,data,'all',nboots,
-            [split],'running_{}'.format(int(b)),meso=meso,first=first,second=second)
+            [split],'running_{}'.format(int(b)),meso=meso,first=first,second=second,
+            image=image)
         if os.path.isfile(filename):
             # Load this bin
             with open(filename,'rb') as handle:
@@ -1175,7 +1275,8 @@ def compute_running_bootstrap(df,condition,cell_type,nboots=10000,data='events',
     # Save file
     if not missing:
         filepath = get_hierarchy_filename(cell_type,condition,data,'all',nboots,
-            ['visual_strategy_session'],'running',meso=meso,first=first,second=second)
+            ['visual_strategy_session'],'running',meso=meso,first=first,second=second,
+            image=image)
         print('saving bootstraps to: '+filepath)
         bootstraps.to_feather(filepath)
     return bootstraps
@@ -1630,9 +1731,10 @@ def compute_engagement_running_bootstrap(df,condition,cell_type,strategy,
     return bootstraps
 
 
-def get_running_bootstraps(cell_type, condition,data,nboots,meso=False,first=False,second=False):
+def get_running_bootstraps(cell_type, condition,data,nboots,meso=False,first=False,second=False,
+    image=False):
     filepath = get_hierarchy_filename(cell_type,condition,data,'all',nboots,
-        ['visual_strategy_session'],'running',meso=meso,first=first,second=second) 
+        ['visual_strategy_session'],'running',meso=meso,first=first,second=second,image=image) 
     if os.path.isfile(filepath):
         bootstraps = pd.read_feather(filepath)
         return bootstraps
@@ -1661,7 +1763,7 @@ def get_pre_change_running_bootstraps(cell_type, condition,data,nboots,strategy)
         print(filepath)
 
 def running_responses(df, condition, cre='vip', bootstraps=None, savefig=False,
-    data='events', split='visual_strategy_session',meso=False,ax=None):
+    data='events', split='visual_strategy_session',meso=False,ax=None,show_mc_insignificant=False):
     if condition =='omission':
         bin_width=5        
     elif condition =='image':
@@ -1741,6 +1843,8 @@ def running_responses(df, condition, cre='vip', bootstraps=None, savefig=False,
         ax.set_ylim(0,.07) 
     elif (cre == 'vip') and (condition =='image'):
         ax.set_ylim(0,.02)
+    elif (cre == 'exc') and (condition == 'image'):
+        ax.set_ylim(0,.0075)
     else:
         ax.set_ylim(bottom=0)
 
@@ -1752,7 +1856,10 @@ def running_responses(df, condition, cre='vip', bootstraps=None, savefig=False,
                 if row.remove:
                     print('Not significant b/c of low count: {}'.format(row.running_bin))
                 else:
-                    ax.plot(row.running_bin*bin_width, y, 'k*')  
+                    ax.plot(row.running_bin*bin_width, y, 'k*') 
+            elif show_mc_insignificant and (row.p_boot < 0.05):
+                    ax.plot(row.running_bin*bin_width, y, 'o',markerfacecolor='None',
+                        markeredgecolor='k') 
         ax.set_ylim(top=y*1.075)
 
     ax.set_xlim(-1,51)
@@ -1772,7 +1879,7 @@ def running_responses(df, condition, cre='vip', bootstraps=None, savefig=False,
         plt.savefig(filename)
 
 def pre_change_running_responses_compare_strategy(df, condition, cre='vip', bootstraps=None, 
-    savefig=False, data='events', change_type='hit'):
+    savefig=False, data='events', change_type='hit',show_mc_insignificant=False):
     if condition =='omission':
         bin_width=5        
     elif condition =='image':
@@ -1789,7 +1896,7 @@ def pre_change_running_responses_compare_strategy(df, condition, cre='vip', boot
         marker='o'
     elif change_type == 'miss':
         df = df.query('(pre_miss_1==1)').copy()
-        marker='x'
+        marker='o'
     df['running_bins'] = np.floor(df['running_speed']/bin_width)
 
     summary = df.groupby(['visual_strategy_session','running_bins'])['response'].mean()\
@@ -1856,6 +1963,9 @@ def pre_change_running_responses_compare_strategy(df, condition, cre='vip', boot
                     print('Not significant b/c of low count: {}'.format(row.running_bin))
                 else:
                     ax.plot(row.running_bin*bin_width, y, 'k*')  
+            elif show_mc_insignificant and (row.p_boot < 0.05):
+                    ax.plot(row.running_bin*bin_width, y, 'o',markerfacecolor='None',
+                        markeredgecolor='k') 
         ax.set_ylim(top=y*1.075)
 
     ax.set_xlim(-1,51)
@@ -3336,7 +3446,11 @@ def bootstrap_significance(bootstrap, k1, k2):
 
 
 def load_df_and_compute_running(summary_df, cell_type, response, data, nboots, 
-    bin_num,meso=False,first=False, second=False):
+    bin_num,meso=False,first=False, second=False,image=False):
+    if first & image:
+        raise Exception('cannot have both first and image')
+    if second & image:
+        raise Exception('cannot have both second and image')
 
     mapper = {
         'exc':'Slc17a7-IRES2-Cre',
@@ -3345,12 +3459,25 @@ def load_df_and_compute_running(summary_df, cell_type, response, data, nboots,
         }
     if response == 'image':
         df = load_image_df(summary_df, mapper[cell_type], data,
-            meso=meso,first=first, second=second)
+            meso=meso,first=first, second=second,image=image)
     elif response == 'omission':
         df = load_omission_df(summary_df, mapper[cell_type], data,
-            meso=meso,first=first,second=second)
+            meso=meso,first=first,second=second,image=image)
+    elif response == 'hit':
+        df = load_change_df(summary_df, mapper[cell_type], data,
+            meso=meso,first=first,second=second,image=image)
+        df=df.query('hit == 1').copy()
+    elif response == 'miss':
+        df = load_change_df(summary_df, mapper[cell_type], data,
+            meso=meso,first=first,second=second,image=image)
+        df=df.query('miss == 1').copy()
+    elif response == 'post_omission':
+        df = load_image_df(summary_df, mapper[cell_type], data,
+            meso=meso,first=first, second=second,image=image)
+        df=df.query('post_omitted_1').copy()
+
     compute_running_bootstrap_bin(df,response, cell_type, bin_num, nboots=nboots,
-            meso=meso,first=first,second=second)
+            meso=meso,first=first,second=second,image=image)
 
 def load_df_and_compute_engagement_running(summary_df, cell_type, response, data, 
     nboots, bin_num,meso=False,first=False,second=False):
@@ -3526,7 +3653,7 @@ def add_hochberg_correction(table):
     return table
 
 def get_hierarchy_filename(cell_type, response, data, depth, nboots, splits, extra,
-    first=False,second=False,meso=False):
+    first=False,second=False,meso=False,image=False):
     filepath = PSTH_DIR + data +'/bootstraps/' +\
         '_'.join([cell_type,response,depth,str(nboots)]+splits)
     if extra != '':
@@ -3535,6 +3662,8 @@ def get_hierarchy_filename(cell_type, response, data, depth, nboots, splits, ext
         filepath += '_first'
     if second:
         filepath += '_second'
+    if image:
+        filepath += '_image'
     if meso:
         filepath += '_meso'
     filepath = filepath+'.feather'
@@ -3545,6 +3674,7 @@ def get_hierarchy(cell_type, response, data, depth, nboots,splits=[],extra='',
     '''
         loads the dataframe from file
     '''
+    raise Exception(" I think this is outdated")
     filepath = get_hierarchy_filename(cell_type,response,data,depth,nboots,
         splits,extra,first,second)
     if os.path.isfile(filepath):
@@ -3862,9 +3992,11 @@ def load_image_and_change_df(summary_df, cre,data='events',first=False,second=Fa
         'binned_depth']],on='ophys_experiment_id')
     return df
 
-def load_omission_df(summary_df, cre, data='events',first=False,second=False,meso=False):
+def load_omission_df(summary_df, cre, data='events',first=False,second=False,
+    meso=False,image=False):
+    
     # load everything
-    df = bd.load_population_df(data,'image_df',cre,first=first,second=second)
+    df = bd.load_population_df(data,'image_df',cre,first=first,second=second,image=image)
     
     # drop omissions
     df.drop(df[~df['omitted']].index,inplace=True)
