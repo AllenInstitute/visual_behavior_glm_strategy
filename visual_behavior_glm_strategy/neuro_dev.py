@@ -159,7 +159,6 @@ bootstraps_post_omission = psth.compute_running_bootstrap(sst_post,'post_omissio
 psth.running_responses(sst_post, 'post_omission',cre='sst',
     bootstraps=bootstraps_post_omission)
 
-# Running 
 sst_omission = psth.load_omission_df(summary_df, cre='Sst-IRES-Cre',data='events',
     meso=True, first=False, second=True, image=False)
 bootstraps_omission = psth.compute_running_bootstrap(sst_omission,'omission','sst',data='events',
