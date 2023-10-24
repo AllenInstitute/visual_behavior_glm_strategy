@@ -20,14 +20,14 @@ if __name__ == '__main__':
     bd.build_response_df_experiment(session,data,first=True,second=False,image=False)
 
     #print('second half') 
-    #bd.build_response_df_experiment(session,data,first=False,second=True,image=False)
+    bd.build_response_df_experiment(session,data,first=False,second=True,image=False)
     
     #print('image period')
-    #bd.build_response_df_experiment(session,data,first=False,second=False, image=True)
+    bd.build_response_df_experiment(session,data,first=False,second=False, image=True)
 
     #print('full interval') 
-    #bd.build_response_df_experiment(session,data,first=False,second=False)
+    bd.build_response_df_experiment(session,data,first=False,second=False)
 
     #print('behavior')
-    #bd.build_behavior_df_experiment(session)
+    bd.build_behavior_df_experiment(session)
     print('grand finished')

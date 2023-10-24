@@ -10,11 +10,9 @@ import visual_behavior_glm_strategy.GLM_strategy_tools as gst
 import matplotlib.pyplot as plt
 plt.ion()
 from importlib import reload
-from alex_utils import *
-
+from alex_utils.alex_utils import *
 BEHAVIOR_VERSION = 21
 summary_df  = po.get_ophys_summary_table(BEHAVIOR_VERSION)
-
 
 ## Fig. 4C - Example ophys schematic
 ################################################################################
@@ -135,7 +133,8 @@ bootstraps=psth.compute_pre_change_running_bootstrap_compare_strategy(vip_image,
     'pre_change','vip')
 psth.pre_change_running_responses_compare_strategy(vip_image,'pre_change',change_type='hit',
     bootstraps=bootstraps)
-
+psth.pre_change_running_responses_compare_strategy(vip_image,'pre_change',change_type='miss',
+    bootstraps=bootstraps)
 
 ## Fig 5
 ################################################################################

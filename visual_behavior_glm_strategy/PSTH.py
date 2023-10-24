@@ -1772,7 +1772,9 @@ def get_pre_change_running_bootstraps(cell_type, condition,data,nboots,strategy)
         print(filepath)
 
 def running_responses(df, condition, cre='vip', bootstraps=None, savefig=False,
-    data='events', split='visual_strategy_session',meso=False,ax=None,show_mc_insignificant=False):
+    data='events', split='visual_strategy_session',meso=False,ax=None,
+    show_mc_insignificant=False):
+
     if condition =='omission':
         bin_width=5        
     elif condition =='image':
@@ -1781,7 +1783,7 @@ def running_responses(df, condition, cre='vip', bootstraps=None, savefig=False,
         bin_width=5
 
     if ax is None:
-        fig, ax = plt.subplots(figsize=(4.25,2.75)) #3.75
+        fig, ax = plt.subplots(figsize=(3.25,2.75)) #4.25, #3.75
 
     df['running_bins'] = np.floor(df['running_speed']/bin_width)
 
@@ -1897,7 +1899,7 @@ def pre_change_running_responses_compare_strategy(df, condition, cre='vip', boot
         bin_width=5
     min_events=10
 
-    fig, ax = plt.subplots(figsize=(4.25,2.75)) #3.75
+    fig, ax = plt.subplots(figsize=(3.25,2.75)) #4.25, #3.75
 
     bootstraps = bootstraps.query('change_type==@change_type').copy()
     if change_type == 'hit':
@@ -3636,7 +3638,7 @@ def compute_hierarchy(df, cell_type, response, data, depth, splits=[],bootstrap=
     
     return mean_df
 
-def add_hochberg_correction(table):
+def add_hochberg_correction(table,alpha=0.05,label='bh_significant'):
     '''
         Performs the Benjamini Hochberg correction
     '''    
@@ -3645,16 +3647,16 @@ def add_hochberg_correction(table):
     table['test_number'] = (~table['location'].duplicated()).cumsum()   
  
     # compute the corrected pvalue based on the rank of each test
-    table['imq'] = (table['test_number'])/table['test_number'].max()*0.05
+    table['imq'] = (table['test_number'])/table['test_number'].max()*alpha
 
     # Find the largest pvalue less than its corrected pvalue
     # all tests above that are significant
-    table['bh_significant'] = False
+    table[label] = False
     passing_tests = table[table['p_boot'] < table['imq']]
     if len(passing_tests) >0:
         last_index = table[table['p_boot'] < table['imq']].tail(1).index.values[0]
-        table.at[last_index,'bh_significant'] = True
-        table.at[0:last_index,'bh_significant'] = True
+        table.at[last_index,label] = True
+        table.at[0:last_index,label] = True
     
     # reset order of table and return
     table = table.sort_values(by='index').reset_index(drop=True)
