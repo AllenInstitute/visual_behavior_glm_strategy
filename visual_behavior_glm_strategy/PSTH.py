@@ -298,7 +298,8 @@ def get_figure_4_psth(data='events',experience_level='Familiar',mesoscope_only=F
 
 def plot_figure_4_averages_licking(dfs,data='filtered_events',savefig=False,\
     areas=['VISp','VISl'],depths=['upper','lower'],experience_level='Familiar',
-    strategy = 'visual_strategy_session',depth='layer',meso=False,ylims = None):
+    strategy = 'visual_strategy_session',depth='layer',meso=False,ylims = None,
+    key='image_fa'):
 
     fig, ax = plt.subplots(3,1,figsize=(4.15,7.75),sharey='row',squeeze=False) 
     labels=['Excitatory','Sst Inhibitory','Vip Inhibitory']
@@ -318,7 +319,7 @@ def plot_figure_4_averages_licking(dfs,data='filtered_events',savefig=False,\
         #max_y[0] = plot_condition_experience(full_df, 'licked', experience_level,
         #    strategy, ax=ax[index, 0], ylabel=ylabel,
         #    error_type=error_type,areas=areas,depths=depths,depth=depth)
-        max_y[0] = plot_condition_experience(full_df, 'image_fa', experience_level,
+        max_y[0] = plot_condition_experience(full_df, key, experience_level,
             strategy, ax=ax[index, 0],ylabel=ylabel,
             error_type=error_type,areas=areas,depths=depths,depth=depth)
         #max_y[2] = plot_condition_experience(full_df, 'image_cr', experience_level,
@@ -867,8 +868,8 @@ def plot_condition_experience(full_df, condition, experience_level, split,
         responses.append(r)
 
     # Annotate figure
-    omitted = 'omission' in condition
-    change = (not omitted) and (('change' in condition) or \
+    omitted = ('omission' in condition) and (not 'no_omission' in condition)
+    change = ('omission' not in condition) and (('change' in condition) or \
         ('hit' in condition) or ('miss' in condition))
     timestamps = df.iloc[0]['time']
     plot_flashes_on_trace(ax, timestamps, change=change, omitted=omitted)

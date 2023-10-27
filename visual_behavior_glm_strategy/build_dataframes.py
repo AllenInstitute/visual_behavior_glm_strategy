@@ -196,9 +196,39 @@ def load_behavior_summary(session):
     bsid = session.metadata['behavior_session_id']
     session_df = ps.load_session_strategy_df(bsid, BEHAVIOR_VERSION)
     session_df['image_fa'] = (~session_df['is_change']) & session_df['lick_bout_start']
-    session_df['image_fa_clean'] = session_df['image_fa']&\
-        (~session_df['image_fa'].shift(1,fill_value=False))&\
-        (~session_df['image_fa'].shift(2,fill_values=False))
+    session_df['image_fa_clean1'] = session_df['image_fa']&\
+        (~session_df['licked'].shift(1,fill_value=False))
+    session_df['image_fa_clean1_no_omission'] = session_df['image_fa']&\
+        (~session_df['licked'].shift(1,fill_value=False))&\
+        (~session_df['omitted'].shift(1,fill_value=False))
+    session_df['image_fa_clean1_with_omission'] = session_df['image_fa']&\
+        (~session_df['licked'].shift(1,fill_value=False))&\
+        (session_df['omitted'].shift(1,fill_value=False))
+    session_df['image_fa_clean2'] = session_df['image_fa']&\
+        (~session_df['licked'].shift(1,fill_value=False))&\
+        (~session_df['licked'].shift(2,fill_value=False))
+    session_df['image_fa_clean2_no_omission'] = session_df['image_fa']&\
+        (~session_df['licked'].shift(1,fill_value=False))&\
+        (~session_df['licked'].shift(2,fill_value=False))&\
+        (~session_df['omitted'].shift(1,fill_value=False))&\
+        (~session_df['omitted'].shift(2,fill_value=False))
+    session_df['image_fa_clean2_with_omission'] = session_df['image_fa']&\
+        (~session_df['licked'].shift(1,fill_value=False))&\
+        (~session_df['licked'].shift(2,fill_value=False))&\
+        (session_df['omitted'].shift(1,fill_value=False)|\
+        session_df['omitted'].shift(2,fill_value=False))
+    session_df['image_fa_clean3'] = session_df['image_fa']&\
+        (~session_df['licked'].shift(1,fill_value=False))&\
+        (~session_df['licked'].shift(2,fill_value=False))&\
+        (~session_df['licked'].shift(3,fill_value=False))
+    session_df['image_fa_clean3_no_omission'] = session_df['image_fa']&\
+        (~session_df['licked'].shift(1,fill_value=False))&\
+        (~session_df['licked'].shift(2,fill_value=False))&\
+        (~session_df['licked'].shift(3,fill_value=False))&\
+        (~session_df['omitted'].shift(1,fill_value=False))&\
+        (~session_df['omitted'].shift(2,fill_value=False))&\
+        (~session_df['omitted'].shift(3,fill_value=False))
+
     session.behavior_df = session_df 
     temporary_engagement_updates(session)
 
@@ -529,30 +559,21 @@ def get_image_df(cell_df,run_df, pupil_df, session,cell_specimen_id,data,
 
     # Add post omission
     image_df['post_omitted_1'] = image_df['omitted'].shift(1,fill_value=False)
-    #image_df['post_omitted_2'] = image_df['omitted'].shift(2,fill_value=False)
 
     # Add pre omission
     image_df['pre_omitted_1'] = image_df['omitted'].shift(-1,fill_value=False)
 
     # Add post change
     image_df['post_miss_1'] = image_df['miss'].shift(1)
-    #image_df['post_miss_2'] = image_df['miss'].shift(2)
     image_df['post_hit_1'] = image_df['hit'].shift(1)
-    #image_df['post_hit_2'] = image_df['hit'].shift(2)
 
     # Add pre change
     image_df['pre_miss_1'] = image_df['miss'].shift(-1)
     image_df['pre_hit_1'] = image_df['hit'].shift(-1)
 
     # Add image false alarm, and pre-false alarm
-    image_df['image_fa'] = (~image_df['is_change']) & image_df['lick_bout_start']
-    image_df['pre_image_fa_1'] = image_df['image_fa'].shift(-1)
-    #image_df['pre_image_fa_2'] = image_df['image_fa'].shift(-2)
-
-    # Add image false alarm with no non-response images before
-    image_df['image_fa_clean'] = image_df['image_fa'] & \
-        (~image_df['image_fa'].shift(1,fill_value=False)) &\
-        (~image_df['image_fa'].shift(2,fill_value=False))
+    image_df['pre_image_fa_1'] = image_df['image_fa'].shift(-1,fill_value=False)
+    image_df['pre_image_fa_clean2_1'] = image_df['image_fa_clean2'].shift(-1,fill_value=False)
 
     # Add running speed
     if run_df is not None:
@@ -702,7 +723,14 @@ def get_conditions():
         'miss':['miss','is_change & not rewarded'],
         'licked':['licked','lick_bout_start'],
         'image_fa':['image_fa','lick_bout_start & not is_change'],
-        'image_fa_clean':['image_fa_clean','image_fa_clean'],
+        'image_fa_clean1':['image_fa_clean1','image_fa_clean1'],
+        'image_fa_clean1_no_omission':['image_fa_clean1_no_omission','image_fa_clean1_no_omission'],
+        'image_fa_clean1_with_omission':['image_fa_clean1_with_omission','image_fa_clean1_with_omission'],
+        'image_fa_clean2':['image_fa_clean2','image_fa_clean2'],
+        'image_fa_clean2_no_omission':['image_fa_clean2_no_omission','image_fa_clean2_no_omission'],
+        'image_fa_clean2_with_omission':['image_fa_clean2_with_omission','image_fa_clean2_with_omission'],
+        'image_fa_clean3':['image_fa_clean3','image_fa_clean3'],
+        'image_fa_clean3_no_omission':['image_fa_clean3_no_omission','image_fa_clean3_no_omission'],
         'hit_censored':['hit_censored', 'is_change & rewarded'],
         'hit_delay_censored':['hit_delay_censored', 'is_change & rewarded'],
         'engaged_v2_image':['engaged_v2_image','(not omitted) & (not is_change) & engagement_v2'],
