@@ -299,7 +299,7 @@ def get_figure_4_psth(data='events',experience_level='Familiar',mesoscope_only=F
 def plot_figure_4_averages_licking(dfs,data='filtered_events',savefig=False,\
     areas=['VISp','VISl'],depths=['upper','lower'],experience_level='Familiar',
     strategy = 'visual_strategy_session',depth='layer',meso=False,ylims = None,
-    key='image_fa'):
+    key='image_fa_clean2_no_omission_no_change'):
 
     fig, ax = plt.subplots(3,1,figsize=(4.15,7.75),sharey='row',squeeze=False) 
     labels=['Excitatory','Sst Inhibitory','Vip Inhibitory']
@@ -3962,9 +3962,9 @@ def load_false_alarm_df(summary_df, cre,data='events',first=False,second=False,m
 
     # Get only False Alarms
     if cre=="Vip-IRES-Cre":
-        df.drop(df[df['pre_image_fa_1']!=True].index,inplace=True) 
+        df.drop(df[df['pre_image_fa_clean2_no_omission_no_change_1']!=True].index,inplace=True) 
     else:
-        df.drop(df[~df['image_fa']].index,inplace=True)
+        df.drop(df[~df['image_fa_clean2_no_omission_no_change']].index,inplace=True)
 
     # drop familiar sessions
     familiar_summary_df = summary_df.query('experience_level == "Familiar"')

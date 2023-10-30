@@ -287,9 +287,9 @@ psth.plot_figure_4_averages_vip_matched_behavior('licks')
 ################################################################################
 dfs = psth.get_figure_4_psth(data='events',mesoscope_only=True)
 ylims = psth.plot_figure_4_averages(dfs, data='events',meso=True)
-psth.plot_figure_4_averages_licking(dfs, data='events',meso=True, ylims=ylims)
 psth.plot_figure_4_averages_licking(dfs, data='events',meso=True, ylims=ylims,
-    key='image_fa_clean2')
+    key='image_fa_clean2_no_omission_no_change')
+
 
 # determine false alarms for exc
 exc_fa = psth.load_false_alarm_df(summary_df, cre='Slc17a7-IRES2-Cre',data='events',
