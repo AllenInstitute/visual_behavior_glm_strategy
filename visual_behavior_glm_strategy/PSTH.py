@@ -868,7 +868,7 @@ def plot_condition_experience(full_df, condition, experience_level, split,
         responses.append(r)
 
     # Annotate figure
-    omitted = ('omission' in condition) and (not 'no_omission' in condition)
+    omitted = ('omission' in condition) and (not 'fa_clean' in condition)
     change = ('omission' not in condition) and (('change' in condition) or \
         ('hit' in condition) or ('miss' in condition))
     timestamps = df.iloc[0]['time']
