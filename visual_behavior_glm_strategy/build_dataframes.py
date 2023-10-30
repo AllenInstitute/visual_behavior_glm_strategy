@@ -552,7 +552,7 @@ def get_image_df(cell_df,run_df, pupil_df, session,cell_specimen_id,data,
 
     # Add image false alarm, and pre-false alarm
     image_df['pre_image_fa_1'] = image_df['image_fa'].shift(-1,fill_value=False)
-    image_df['pre_image_fa_clean2_1'] = image_df['image_fa_clean2'].shift(-1,fill_value=False)
+    image_df['pre_image_fa_clean2_no_omission_no_change_1'] = image_df['image_fa_clean2_no_omission_no_change'].shift(-1,fill_value=False)
 
     # Add running speed
     if run_df is not None:
