@@ -151,14 +151,15 @@ gpt.PSTH_analysis(dfs,  'image',run_params,meso=True)
 gpt.PSTH_analysis(dfs,  'omission',run_params,meso=True)
 gpt.PSTH_analysis(dfs,  'hit',run_params,meso=True)
 gpt.PSTH_analysis(dfs,  'miss',run_params,meso=True)
-gpt.PSTH_analysis(dfs,  'image_fa',run_params,meso=True)
+gpt.PSTH_analysis(dfs,  'image_fa_clean2_no_omission_no_change',
+    run_params,meso=True)
 
 # Plot state space plots
 gpt.plot_PSTH_perturbation(dfs,labels,'image',run_params,meso=True,savefig=True)
 gpt.plot_PSTH_perturbation(dfs,labels,'omission',run_params,meso=True,savefig=True)
 gpt.plot_PSTH_perturbation(dfs,labels,'hit',run_params,meso=True,savefig=True)
 gpt.plot_PSTH_perturbation(dfs,labels,'miss',run_params,meso=True,savefig=True)
-gpt.plot_PSTH_perturbation(dfs,labels,'image_fa',run_params,meso=True,savefig=True)
+gpt.plot_PSTH_perturbation(dfs,labels,'image_fa_clean2_no_omission_no_change',run_params,meso=True,savefig=True)
 
 # Plot 3D state space plots
 gpt.plot_PSTH_3D(dfs,labels,'image',run_params,meso=True,savefig=True)
@@ -168,21 +169,21 @@ gpt.plot_PSTH_perturbation(dfs,labels,'image',run_params,x='Sst',meso=True,savef
 gpt.plot_PSTH_perturbation(dfs,labels,'omission',run_params,x='Sst',meso=True,savefig=True)
 gpt.plot_PSTH_perturbation(dfs,labels,'hit',run_params,x='Sst',meso=True,savefig=True)
 gpt.plot_PSTH_perturbation(dfs,labels,'miss',run_params,x='Sst',meso=True,savefig=True)
-gpt.plot_PSTH_perturbation(dfs,labels,'image_fa',run_params,x='Sst',meso=True,savefig=True)
+gpt.plot_PSTH_perturbation(dfs,labels,'image_fa_clean2_no_omission_no_change',run_params,x='Sst',meso=True,savefig=True)
 
 
 gpt.plot_PSTH_perturbation(dfs,labels,'image',run_params,y='Sst',meso=True,savefig=True)
 gpt.plot_PSTH_perturbation(dfs,labels,'omission',run_params,y='Sst',meso=True,savefig=True)
 gpt.plot_PSTH_perturbation(dfs,labels,'hit',run_params,y='Sst',meso=True,savefig=True)
 gpt.plot_PSTH_perturbation(dfs,labels,'miss',run_params,y='Sst',meso=True,savefig=True)
-gpt.plot_PSTH_perturbation(dfs,labels,'image_fa',run_params,y='Sst',meso=True,savefig=True)
+gpt.plot_PSTH_perturbation(dfs,labels,'image_fa_clean2_no_omission_no_change',run_params,y='Sst',meso=True,savefig=True)
 
 
 gpt.plot_PSTH_3D(dfs,labels,'image',run_params,supp_fig=True,meso=True,savefig=True)
 gpt.plot_PSTH_3D(dfs,labels,'omission',run_params,supp_fig=True,meso=True,savefig=True)
 gpt.plot_PSTH_3D(dfs,labels,'hit',run_params,supp_fig=True,meso=True,savefig=True)
 gpt.plot_PSTH_3D(dfs,labels,'miss',run_params,supp_fig=True,meso=True,savefig=True)
-gpt.plot_PSTH_3D(dfs,labels,'image_fa',run_params,supp_fig=True,meso=True,savefig=True)
+gpt.plot_PSTH_3D(dfs,labels,'image_fa_clean2_no_omission_no_change',run_params,supp_fig=True,meso=True,savefig=True)
 
 
 
