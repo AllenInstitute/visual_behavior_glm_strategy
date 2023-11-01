@@ -298,7 +298,8 @@ def get_figure_4_psth(data='events',experience_level='Familiar',mesoscope_only=F
 
 def plot_figure_4_averages_licking(dfs,data='filtered_events',savefig=False,\
     areas=['VISp','VISl'],depths=['upper','lower'],experience_level='Familiar',
-    strategy = 'visual_strategy_session',depth='layer',meso=False,ylims = None):
+    strategy = 'visual_strategy_session',depth='layer',meso=False,ylims = None,
+    key='image_fa_clean2_no_omission_no_change'):
 
     fig, ax = plt.subplots(3,1,figsize=(4.15,7.75),sharey='row',squeeze=False) 
     labels=['Excitatory','Sst Inhibitory','Vip Inhibitory']
@@ -318,7 +319,7 @@ def plot_figure_4_averages_licking(dfs,data='filtered_events',savefig=False,\
         #max_y[0] = plot_condition_experience(full_df, 'licked', experience_level,
         #    strategy, ax=ax[index, 0], ylabel=ylabel,
         #    error_type=error_type,areas=areas,depths=depths,depth=depth)
-        max_y[0] = plot_condition_experience(full_df, 'image_fa', experience_level,
+        max_y[0] = plot_condition_experience(full_df, key, experience_level,
             strategy, ax=ax[index, 0],ylabel=ylabel,
             error_type=error_type,areas=areas,depths=depths,depth=depth)
         #max_y[2] = plot_condition_experience(full_df, 'image_cr', experience_level,
@@ -566,7 +567,7 @@ def plot_figure_4_averages_vip_matched_behavior(data='running',experience_level=
 
 
 def plot_figure_4_averages_vip_matched(dfs=None,ylims=None, savefig=False,
-    experience_level='Familiar',meso=True):
+    experience_level='Familiar',meso=True,plot_comparison=False):
 
     if (dfs is None):
         dfs = get_figure_4_psth(data='events',mesoscope_only=True)
@@ -599,7 +600,16 @@ def plot_figure_4_averages_vip_matched(dfs=None,ylims=None, savefig=False,
     ax[0,0].set_xlabel('time from omission (s)',fontsize=16)
     ax[0,1].set_xlabel('time from hit (s)',fontsize=16)
     ax[0,2].set_xlabel('time from miss (s)',fontsize=16)
-    plt.tight_layout()
+    if plot_comparison:
+        max_y[0] = plot_condition_experience(dfs[2], 'omission', experience_level,
+            strategy, ax=ax[0,0], ylabel=ylabel,plot_strategy='timing',
+            error_type=error_type,areas=areas,depths=depths,depth=depth,set_color='lightblue')
+        max_y[1] = plot_condition_experience(dfs[2], 'hit', experience_level,
+            strategy, ax=ax[0,1],ylabel='',plot_strategy='timing',
+            error_type=error_type,areas=areas,depths=depths,depth=depth,set_color='lightblue')
+        max_y[2] = plot_condition_experience(dfs[2], 'miss', experience_level,
+            strategy, ax=ax[0,2],ylabel='',plot_strategy='timing',
+            error_type=error_type,areas=areas,depths=depths,depth=depth,set_color='lightblue')
 
     plt.tight_layout()
     if savefig:
@@ -858,8 +868,8 @@ def plot_condition_experience(full_df, condition, experience_level, split,
         responses.append(r)
 
     # Annotate figure
-    omitted = 'omission' in condition
-    change = (not omitted) and (('change' in condition) or \
+    omitted = ('omission' in condition) and (not 'fa_clean' in condition)
+    change = ('omission' not in condition) and (('change' in condition) or \
         ('hit' in condition) or ('miss' in condition))
     timestamps = df.iloc[0]['time']
     plot_flashes_on_trace(ax, timestamps, change=change, omitted=omitted)
@@ -1763,7 +1773,9 @@ def get_pre_change_running_bootstraps(cell_type, condition,data,nboots,strategy)
         print(filepath)
 
 def running_responses(df, condition, cre='vip', bootstraps=None, savefig=False,
-    data='events', split='visual_strategy_session',meso=False,ax=None,show_mc_insignificant=False):
+    data='events', split='visual_strategy_session',meso=False,ax=None,
+    show_mc_insignificant=False):
+
     if condition =='omission':
         bin_width=5        
     elif condition =='image':
@@ -1772,7 +1784,7 @@ def running_responses(df, condition, cre='vip', bootstraps=None, savefig=False,
         bin_width=5
 
     if ax is None:
-        fig, ax = plt.subplots(figsize=(4.25,2.75)) #3.75
+        fig, ax = plt.subplots(figsize=(3.25,2.75)) #4.25, #3.75
 
     df['running_bins'] = np.floor(df['running_speed']/bin_width)
 
@@ -1888,7 +1900,7 @@ def pre_change_running_responses_compare_strategy(df, condition, cre='vip', boot
         bin_width=5
     min_events=10
 
-    fig, ax = plt.subplots(figsize=(4.25,2.75)) #3.75
+    fig, ax = plt.subplots(figsize=(3.25,2.75)) #4.25, #3.75
 
     bootstraps = bootstraps.query('change_type==@change_type').copy()
     if change_type == 'hit':
@@ -2407,7 +2419,7 @@ def get_summary_bootstrap_strategy_false_alarm(data='events',nboots=10000,cell_t
         print('file not found')
 
 def plot_summary_bootstrap_strategy_false_alarm(df,cell_type,savefig=False,data='events',
-    nboots=10000,first=True, second=False,post=False,meso=False,image=False,ax=None,bootstrap=None):
+    nboots=10000,first=True, second=False,post=False,meso=False,image=False,ax=None,bootstrap=None,means=None):
     
     if bootstrap is None:
         bootstrap = get_summary_bootstrap_strategy_false_alarm(data, nboots,cell_type,
@@ -2424,7 +2436,8 @@ def plot_summary_bootstrap_strategy_false_alarm(df,cell_type,savefig=False,data=
         fig,ax = plt.subplots(figsize=(2.5,2.75))
     visual_mean = df.query('visual_strategy_session')['response'].mean()
     timing_mean = df.query('not visual_strategy_session')['response'].mean()
-    means={}
+    if means is None:
+        means={}
     means['visual_fa'] = visual_mean
     means['timing_fa'] = timing_mean
     visual_sem = np.std(bootstrap['visual_fa'])
@@ -2511,9 +2524,11 @@ def plot_summary_bootstrap_strategy_false_alarm(df,cell_type,savefig=False,data=
         filepath = filepath+'.svg'
         print('Figure saved to: '+filepath)
         plt.savefig(filepath)
-    print_bootstrap_summary(means,bootstrap,p_fa,keys=['visual_fa','timing_fa'])
-
-
+    print_bootstrap_summary(means,bootstrap,bootstrap_significance(bootstrap, 'visual_fa','timing_fa'),keys=['visual_fa','timing_fa'])
+    print_bootstrap_summary(means,bootstrap,bootstrap_significance(bootstrap, 'visual_fa','visual_hit'),keys=['visual_fa','visual_hit'])
+    print_bootstrap_summary(means,bootstrap,bootstrap_significance(bootstrap, 'visual_fa','visual_miss'),keys=['visual_fa','visual_miss'])
+    print_bootstrap_summary(means,bootstrap,bootstrap_significance(bootstrap, 'timing_fa','timing_hit'),keys=['timing_fa','timing_hit'])
+    print_bootstrap_summary(means,bootstrap,bootstrap_significance(bootstrap, 'timing_fa','timing_miss'),keys=['timing_fa','timing_miss'])
 
 def compute_summary_bootstrap_omission_strategy(df,data='events',nboots=10000,cell_type='exc',
     first=True,second=False,image=False,post=False,meso=False):
@@ -2891,7 +2906,7 @@ def plot_summary_bootstrap_strategy_pre_change(df,cell_type,savefig=False,data='
 
     if return_data:
         plt.tight_layout()
-        return ax, bootstrap 
+        return ax, bootstrap,means 
  
     ax.set_ylim(bottom=0)
  
@@ -3056,7 +3071,7 @@ def plot_summary_bootstrap_strategy_hit(df,cell_type,savefig=False,data='events'
 
     if return_data:
         plt.tight_layout()
-        return ax, bootstrap  
+        return ax, bootstrap,means  
  
     p = bootstrap_significance(bootstrap, 'visual_hit','timing_hit')
     if (p < 0.05) or (p >.95):
@@ -3627,7 +3642,7 @@ def compute_hierarchy(df, cell_type, response, data, depth, splits=[],bootstrap=
     
     return mean_df
 
-def add_hochberg_correction(table):
+def add_hochberg_correction(table,alpha=0.05,label='bh_significant'):
     '''
         Performs the Benjamini Hochberg correction
     '''    
@@ -3636,16 +3651,16 @@ def add_hochberg_correction(table):
     table['test_number'] = (~table['location'].duplicated()).cumsum()   
  
     # compute the corrected pvalue based on the rank of each test
-    table['imq'] = (table['test_number'])/table['test_number'].max()*0.05
+    table['imq'] = (table['test_number'])/table['test_number'].max()*alpha
 
     # Find the largest pvalue less than its corrected pvalue
     # all tests above that are significant
-    table['bh_significant'] = False
+    table[label] = False
     passing_tests = table[table['p_boot'] < table['imq']]
     if len(passing_tests) >0:
         last_index = table[table['p_boot'] < table['imq']].tail(1).index.values[0]
-        table.at[last_index,'bh_significant'] = True
-        table.at[0:last_index,'bh_significant'] = True
+        table.at[last_index,label] = True
+        table.at[0:last_index,label] = True
     
     # reset order of table and return
     table = table.sort_values(by='index').reset_index(drop=True)
@@ -3950,9 +3965,9 @@ def load_false_alarm_df(summary_df, cre,data='events',first=False,second=False,m
 
     # Get only False Alarms
     if cre=="Vip-IRES-Cre":
-        df.drop(df[df['pre_image_fa_1']!=True].index,inplace=True) 
+        df.drop(df[df['pre_image_fa_clean2_no_omission_no_change_1']!=True].index,inplace=True) 
     else:
-        df.drop(df[~df['image_fa']].index,inplace=True)
+        df.drop(df[~df['image_fa_clean2_no_omission_no_change']].index,inplace=True)
 
     # drop familiar sessions
     familiar_summary_df = summary_df.query('experience_level == "Familiar"')

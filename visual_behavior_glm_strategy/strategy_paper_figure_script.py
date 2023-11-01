@@ -10,11 +10,9 @@ import visual_behavior_glm_strategy.GLM_strategy_tools as gst
 import matplotlib.pyplot as plt
 plt.ion()
 from importlib import reload
-from alex_utils import *
-
+from alex_utils.alex_utils import *
 BEHAVIOR_VERSION = 21
 summary_df  = po.get_ophys_summary_table(BEHAVIOR_VERSION)
-
 
 ## Fig. 4C - Example ophys schematic
 ################################################################################
@@ -135,7 +133,8 @@ bootstraps=psth.compute_pre_change_running_bootstrap_compare_strategy(vip_image,
     'pre_change','vip')
 psth.pre_change_running_responses_compare_strategy(vip_image,'pre_change',change_type='hit',
     bootstraps=bootstraps)
-
+psth.pre_change_running_responses_compare_strategy(vip_image,'pre_change',change_type='miss',
+    bootstraps=bootstraps)
 
 ## Fig 5
 ################################################################################
@@ -152,14 +151,15 @@ gpt.PSTH_analysis(dfs,  'image',run_params,meso=True)
 gpt.PSTH_analysis(dfs,  'omission',run_params,meso=True)
 gpt.PSTH_analysis(dfs,  'hit',run_params,meso=True)
 gpt.PSTH_analysis(dfs,  'miss',run_params,meso=True)
-gpt.PSTH_analysis(dfs,  'image_fa',run_params,meso=True)
+gpt.PSTH_analysis(dfs,  'image_fa_clean2_no_omission_no_change',
+    run_params,meso=True)
 
 # Plot state space plots
 gpt.plot_PSTH_perturbation(dfs,labels,'image',run_params,meso=True,savefig=True)
 gpt.plot_PSTH_perturbation(dfs,labels,'omission',run_params,meso=True,savefig=True)
 gpt.plot_PSTH_perturbation(dfs,labels,'hit',run_params,meso=True,savefig=True)
 gpt.plot_PSTH_perturbation(dfs,labels,'miss',run_params,meso=True,savefig=True)
-gpt.plot_PSTH_perturbation(dfs,labels,'image_fa',run_params,meso=True,savefig=True)
+gpt.plot_PSTH_perturbation(dfs,labels,'image_fa_clean2_no_omission_no_change',run_params,meso=True,savefig=True)
 
 # Plot 3D state space plots
 gpt.plot_PSTH_3D(dfs,labels,'image',run_params,meso=True,savefig=True)
@@ -169,21 +169,21 @@ gpt.plot_PSTH_perturbation(dfs,labels,'image',run_params,x='Sst',meso=True,savef
 gpt.plot_PSTH_perturbation(dfs,labels,'omission',run_params,x='Sst',meso=True,savefig=True)
 gpt.plot_PSTH_perturbation(dfs,labels,'hit',run_params,x='Sst',meso=True,savefig=True)
 gpt.plot_PSTH_perturbation(dfs,labels,'miss',run_params,x='Sst',meso=True,savefig=True)
-gpt.plot_PSTH_perturbation(dfs,labels,'image_fa',run_params,x='Sst',meso=True,savefig=True)
+gpt.plot_PSTH_perturbation(dfs,labels,'image_fa_clean2_no_omission_no_change',run_params,x='Sst',meso=True,savefig=True)
 
 
 gpt.plot_PSTH_perturbation(dfs,labels,'image',run_params,y='Sst',meso=True,savefig=True)
 gpt.plot_PSTH_perturbation(dfs,labels,'omission',run_params,y='Sst',meso=True,savefig=True)
 gpt.plot_PSTH_perturbation(dfs,labels,'hit',run_params,y='Sst',meso=True,savefig=True)
 gpt.plot_PSTH_perturbation(dfs,labels,'miss',run_params,y='Sst',meso=True,savefig=True)
-gpt.plot_PSTH_perturbation(dfs,labels,'image_fa',run_params,y='Sst',meso=True,savefig=True)
+gpt.plot_PSTH_perturbation(dfs,labels,'image_fa_clean2_no_omission_no_change',run_params,y='Sst',meso=True,savefig=True)
 
 
 gpt.plot_PSTH_3D(dfs,labels,'image',run_params,supp_fig=True,meso=True,savefig=True)
 gpt.plot_PSTH_3D(dfs,labels,'omission',run_params,supp_fig=True,meso=True,savefig=True)
 gpt.plot_PSTH_3D(dfs,labels,'hit',run_params,supp_fig=True,meso=True,savefig=True)
 gpt.plot_PSTH_3D(dfs,labels,'miss',run_params,supp_fig=True,meso=True,savefig=True)
-gpt.plot_PSTH_3D(dfs,labels,'image_fa',run_params,supp_fig=True,meso=True,savefig=True)
+gpt.plot_PSTH_3D(dfs,labels,'image_fa_clean2_no_omission_no_change',run_params,supp_fig=True,meso=True,savefig=True)
 
 
 
@@ -288,37 +288,39 @@ psth.plot_figure_4_averages_vip_matched_behavior('licks')
 ################################################################################
 dfs = psth.get_figure_4_psth(data='events',mesoscope_only=True)
 ylims = psth.plot_figure_4_averages(dfs, data='events',meso=True)
-psth.plot_figure_4_averages_licking(dfs, data='events',meso=True, ylims=ylims)
+psth.plot_figure_4_averages_licking(dfs, data='events',meso=True, ylims=ylims,
+    key='image_fa_clean2_no_omission_no_change')
+
 
 # determine false alarms for exc
 exc_fa = psth.load_false_alarm_df(summary_df, cre='Slc17a7-IRES2-Cre',data='events',
     first=False, second=False, image=True, meso=True)
 exc_change = psth.load_change_df(summary_df, cre='Slc17a7-IRES2-Cre',data='events',
     first=False, second=False, image=True,meso=True)
-ax,bootstrap = psth.plot_summary_bootstrap_strategy_hit(exc_change, 'exc', first=False, second=False,
-    image=True,meso=True,return_data=True)
+ax,bootstrap,means = psth.plot_summary_bootstrap_strategy_hit(exc_change, 'exc', 
+    first=False, second=False,image=True,meso=True,return_data=True)
 psth.plot_summary_bootstrap_strategy_false_alarm(exc_fa, 'exc',first=False, second=False,
-    image=True, meso=True,ax=ax,bootstrap=bootstrap)
+    image=True, meso=True,ax=ax,bootstrap=bootstrap,means=means)
 
 # determine false alarms for sst
 sst_fa = psth.load_false_alarm_df(summary_df, cre='Sst-IRES-Cre',data='events',
     first=False, second=True, image=False, meso=True)
 sst_change = psth.load_change_df(summary_df, cre='Sst-IRES-Cre',data='events',
    first=False, second=True,meso=True)
-ax,bootstrap = psth.plot_summary_bootstrap_strategy_hit(sst_change,'sst',first=False, second=True,
-    meso=True,return_data=True)
+ax,bootstrap,means = psth.plot_summary_bootstrap_strategy_hit(sst_change,'sst',
+    first=False, second=True,meso=True,return_data=True)
 psth.plot_summary_bootstrap_strategy_false_alarm(sst_fa, 'sst',first=False, second=True,
-    image=False, meso=True,ax=ax,bootstrap=bootstrap)
+    image=False, meso=True,ax=ax,bootstrap=bootstrap,means=means)
 
 # determine false alarms for vip
 vip_fa = psth.load_false_alarm_df(summary_df, cre='Vip-IRES-Cre',data='events',
     first=False, second=True, image=False, meso=True)
 vip_image = psth.load_image_df(summary_df, cre='Vip-IRES-Cre',data='events',
     first=False, second=True,meso=True)
-ax,bootstrap = psth.plot_summary_bootstrap_strategy_pre_change(vip_image,'vip',first=False, 
-    second=True,meso=True,return_data=True)
+ax,bootstrap,means = psth.plot_summary_bootstrap_strategy_pre_change(vip_image,'vip',
+    first=False, second=True,meso=True,return_data=True)
 psth.plot_summary_bootstrap_strategy_false_alarm(vip_fa, 'vip',first=False, second=True,
-    image=False, meso=True,ax=ax,bootstrap=bootstrap)
+    image=False, meso=True,ax=ax,bootstrap=bootstrap,means=means)
 
 
 

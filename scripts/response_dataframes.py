@@ -16,8 +16,8 @@ if __name__ == '__main__':
     session = bd.load_data(args.ophys_experiment_id)
     data = 'events'
 
-    print('first half') 
-    bd.build_response_df_experiment(session,data,first=True,second=False,image=False)
+    #print('first half') 
+    #bd.build_response_df_experiment(session,data,first=True,second=False,image=False)
 
     #print('second half') 
     #bd.build_response_df_experiment(session,data,first=False,second=True,image=False)
@@ -25,9 +25,9 @@ if __name__ == '__main__':
     #print('image period')
     #bd.build_response_df_experiment(session,data,first=False,second=False, image=True)
 
-    #print('full interval') 
-    #bd.build_response_df_experiment(session,data,first=False,second=False)
+    print('full interval') 
+    bd.build_response_df_experiment(session,data,first=False,second=False)
 
-    #print('behavior')
-    #bd.build_behavior_df_experiment(session)
+    print('behavior')
+    bd.build_behavior_df_experiment(session)
     print('grand finished')

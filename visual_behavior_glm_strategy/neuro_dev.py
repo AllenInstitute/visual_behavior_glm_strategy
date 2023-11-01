@@ -110,7 +110,6 @@ vip_full_filtered = bd.load_population_df('filtered_events','full_df','Vip-IRES-
 ## EXC Running controls
 ################################################################################
 
-# Missing a few bins, they are re-running
 exc_image = psth.load_image_df(summary_df, cre='Slc17a7-IRES2-Cre',data='events',
     first=False, second=False, image=True, meso=True)
 bootstraps_image = psth.compute_running_bootstrap(exc_image,'image','exc',data='events',
@@ -159,7 +158,6 @@ bootstraps_post_omission = psth.compute_running_bootstrap(sst_post,'post_omissio
 psth.running_responses(sst_post, 'post_omission',cre='sst',
     bootstraps=bootstraps_post_omission)
 
-# Running 
 sst_omission = psth.load_omission_df(summary_df, cre='Sst-IRES-Cre',data='events',
     meso=True, first=False, second=True, image=False)
 bootstraps_omission = psth.compute_running_bootstrap(sst_omission,'omission','sst',data='events',
