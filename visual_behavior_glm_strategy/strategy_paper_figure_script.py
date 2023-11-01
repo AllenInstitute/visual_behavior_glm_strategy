@@ -297,30 +297,30 @@ exc_fa = psth.load_false_alarm_df(summary_df, cre='Slc17a7-IRES2-Cre',data='even
     first=False, second=False, image=True, meso=True)
 exc_change = psth.load_change_df(summary_df, cre='Slc17a7-IRES2-Cre',data='events',
     first=False, second=False, image=True,meso=True)
-ax,bootstrap = psth.plot_summary_bootstrap_strategy_hit(exc_change, 'exc', first=False, second=False,
-    image=True,meso=True,return_data=True)
+ax,bootstrap,means = psth.plot_summary_bootstrap_strategy_hit(exc_change, 'exc', 
+    first=False, second=False,image=True,meso=True,return_data=True)
 psth.plot_summary_bootstrap_strategy_false_alarm(exc_fa, 'exc',first=False, second=False,
-    image=True, meso=True,ax=ax,bootstrap=bootstrap)
+    image=True, meso=True,ax=ax,bootstrap=bootstrap,means=means)
 
 # determine false alarms for sst
 sst_fa = psth.load_false_alarm_df(summary_df, cre='Sst-IRES-Cre',data='events',
     first=False, second=True, image=False, meso=True)
 sst_change = psth.load_change_df(summary_df, cre='Sst-IRES-Cre',data='events',
    first=False, second=True,meso=True)
-ax,bootstrap = psth.plot_summary_bootstrap_strategy_hit(sst_change,'sst',first=False, second=True,
-    meso=True,return_data=True)
+ax,bootstrap,means = psth.plot_summary_bootstrap_strategy_hit(sst_change,'sst',
+    first=False, second=True,meso=True,return_data=True)
 psth.plot_summary_bootstrap_strategy_false_alarm(sst_fa, 'sst',first=False, second=True,
-    image=False, meso=True,ax=ax,bootstrap=bootstrap)
+    image=False, meso=True,ax=ax,bootstrap=bootstrap,means=means)
 
 # determine false alarms for vip
 vip_fa = psth.load_false_alarm_df(summary_df, cre='Vip-IRES-Cre',data='events',
     first=False, second=True, image=False, meso=True)
 vip_image = psth.load_image_df(summary_df, cre='Vip-IRES-Cre',data='events',
     first=False, second=True,meso=True)
-ax,bootstrap = psth.plot_summary_bootstrap_strategy_pre_change(vip_image,'vip',first=False, 
-    second=True,meso=True,return_data=True)
+ax,bootstrap,means = psth.plot_summary_bootstrap_strategy_pre_change(vip_image,'vip',
+    first=False, second=True,meso=True,return_data=True)
 psth.plot_summary_bootstrap_strategy_false_alarm(vip_fa, 'vip',first=False, second=True,
-    image=False, meso=True,ax=ax,bootstrap=bootstrap)
+    image=False, meso=True,ax=ax,bootstrap=bootstrap,means=means)
 
 
 

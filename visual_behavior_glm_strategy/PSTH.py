@@ -2419,7 +2419,7 @@ def get_summary_bootstrap_strategy_false_alarm(data='events',nboots=10000,cell_t
         print('file not found')
 
 def plot_summary_bootstrap_strategy_false_alarm(df,cell_type,savefig=False,data='events',
-    nboots=10000,first=True, second=False,post=False,meso=False,image=False,ax=None,bootstrap=None):
+    nboots=10000,first=True, second=False,post=False,meso=False,image=False,ax=None,bootstrap=None,means=None):
     
     if bootstrap is None:
         bootstrap = get_summary_bootstrap_strategy_false_alarm(data, nboots,cell_type,
@@ -2436,7 +2436,8 @@ def plot_summary_bootstrap_strategy_false_alarm(df,cell_type,savefig=False,data=
         fig,ax = plt.subplots(figsize=(2.5,2.75))
     visual_mean = df.query('visual_strategy_session')['response'].mean()
     timing_mean = df.query('not visual_strategy_session')['response'].mean()
-    means={}
+    if means is None:
+        means={}
     means['visual_fa'] = visual_mean
     means['timing_fa'] = timing_mean
     visual_sem = np.std(bootstrap['visual_fa'])
@@ -2523,9 +2524,11 @@ def plot_summary_bootstrap_strategy_false_alarm(df,cell_type,savefig=False,data=
         filepath = filepath+'.svg'
         print('Figure saved to: '+filepath)
         plt.savefig(filepath)
-    print_bootstrap_summary(means,bootstrap,p_fa,keys=['visual_fa','timing_fa'])
-
-
+    print_bootstrap_summary(means,bootstrap,bootstrap_significance(bootstrap, 'visual_fa','timing_fa'),keys=['visual_fa','timing_fa'])
+    print_bootstrap_summary(means,bootstrap,bootstrap_significance(bootstrap, 'visual_fa','visual_hit'),keys=['visual_fa','visual_hit'])
+    print_bootstrap_summary(means,bootstrap,bootstrap_significance(bootstrap, 'visual_fa','visual_miss'),keys=['visual_fa','visual_miss'])
+    print_bootstrap_summary(means,bootstrap,bootstrap_significance(bootstrap, 'timing_fa','timing_hit'),keys=['timing_fa','timing_hit'])
+    print_bootstrap_summary(means,bootstrap,bootstrap_significance(bootstrap, 'timing_fa','timing_miss'),keys=['timing_fa','timing_miss'])
 
 def compute_summary_bootstrap_omission_strategy(df,data='events',nboots=10000,cell_type='exc',
     first=True,second=False,image=False,post=False,meso=False):
@@ -2903,7 +2906,7 @@ def plot_summary_bootstrap_strategy_pre_change(df,cell_type,savefig=False,data='
 
     if return_data:
         plt.tight_layout()
-        return ax, bootstrap 
+        return ax, bootstrap,means 
  
     ax.set_ylim(bottom=0)
  
@@ -3068,7 +3071,7 @@ def plot_summary_bootstrap_strategy_hit(df,cell_type,savefig=False,data='events'
 
     if return_data:
         plt.tight_layout()
-        return ax, bootstrap  
+        return ax, bootstrap,means  
  
     p = bootstrap_significance(bootstrap, 'visual_hit','timing_hit')
     if (p < 0.05) or (p >.95):
