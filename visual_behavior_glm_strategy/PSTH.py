@@ -436,8 +436,8 @@ def plot_figure_4_behavioral_inner(dfs,data='filtered_events',savefig=False,\
         max_y[2] = plot_condition_experience(full_df, 'miss', experience_level,
             strategy, ax=ax[index, 2],ylabel='',
             error_type=error_type,areas=areas,depths=depths,depth=depth)
-        max_y[3] = plot_condition_experience(full_df, 'image_fa', experience_level,
-            strategy, ax=ax[index, 3],ylabel='',
+        max_y[3] = plot_condition_experience(full_df, 'image_fa_clean2_no_omission_no_change', 
+            experience_level,strategy, ax=ax[index, 3],ylabel='',
             error_type=error_type,areas=areas,depths=depths,depth=depth)
         if in_ylims is None:
             ax[index,0].set_ylim(top = 1.05*np.max(max_y))
