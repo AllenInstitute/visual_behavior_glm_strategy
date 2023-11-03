@@ -14,5 +14,5 @@ parser.add_argument(
 if __name__ == '__main__':
     args = parser.parse_args()
 
-    d.decode_experiment(args.ophys_experiment_id,version=7,FA=True)
+    d.decode_experiment(args.ophys_experiment_id,version=8,FA=True)
     print('grand finished')

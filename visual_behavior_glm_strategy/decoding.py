@@ -63,9 +63,9 @@ def decode_experiment(oeid, version, data='events',window=[0,.4],FA=False):
     filename='/allen/programs/braintv/workgroups/nc-ophys/alex.piet'+\
         '/behavior/decoding/experiments_fit_{}/'.format(version)
     if FA: 
-        filename += str(oeid)+'.pkl'
-    else:
         filename += str(oeid)+'_FA.pkl'
+    else:
+        filename += str(oeid)+'.pkl'
     print('Saving to: '+filename)
     results_df.to_pickle(filename)
     print('Finished')
@@ -354,7 +354,20 @@ def plot_by_strategy_scatter(visual, timing, metric, savefig, cell_type,
         else:
             ax.set_xlim(0.5,.75)
             ax.set_ylim(0.5,.75)      
-        ax.set_title('hit decoder performance',fontsize=16) 
+        ax.set_title('hit decoder performance',fontsize=16)
+    elif metric == 'test_score_FA':
+        ax.plot([0.5, 1],[0.5, 1], 'k--',alpha=.25)
+        ax.set_ylabel('visual sessions',
+            fontsize=16)
+        ax.set_xlabel('timing sessions',
+            fontsize=16)
+        if meso:
+            ax.set_xlim(0.5,.8)
+            ax.set_ylim(0.5,.8)             
+        else:
+            ax.set_xlim(0.5,.75)
+            ax.set_ylim(0.5,.75)      
+        ax.set_title('FA decoder performance',fontsize=16) 
     ax.spines['top'].set_visible(False)
     ax.spines['right'].set_visible(False)
     ax.xaxis.set_tick_params(labelsize=12)
@@ -379,7 +392,7 @@ def plot_by_strategy_scatter(visual, timing, metric, savefig, cell_type,
             filename += 'scatter_by_cre_'+metric+'.svg'
         print(filename)
         plt.savefig(filename)
-
+    return df
 
 def plot_by_strategy_hit_vs_miss(visual, timing, savefig, cell_type):
 
@@ -465,6 +478,47 @@ def plot_by_strategy(results_df,aggregate_first=True,cell_type='exc',
     plot_by_strategy_scatter(visual, timing,'test_score',savefig,
         cell_type,version)
 
+
+def plot_by_cre_FA(results_df, aggregate_first=True,areas=['VISp','VISl'],
+    equipment=['MESO.1','CAM2P.3','CAM2P.4','CAM2P.5'],ncells=2,
+    savefig=False,version=None,meso=False):
+
+    # filter out experiments
+    results_df = results_df.query('experience_level == "Familiar"')
+    results_df = results_df.query('targeted_structure in @areas')
+    results_df = results_df.query('equipment_name in @equipment') 
+    results_df = results_df.query('n_cells > @ncells')
+
+    # Split by strategy
+    cres = ['Slc17a7-IRES2-Cre','Sst-IRES-Cre','Vip-IRES-Cre']
+    mapper = {
+        'Slc17a7-IRES2-Cre':'exc',
+        'Sst-IRES-Cre':'sst',
+        'Vip-IRES-Cre':'vip'
+        }
+    fig1, ax1 = plt.subplots()
+    stats = []
+    for index,cre in enumerate(cres):
+        cre_df = results_df.query('cre_line == @cre')
+        # Average over samples from the same experiment, so each experiment 
+        # is weighted the same
+        if aggregate_first:   
+            x = cre_df.groupby(['n_cells','ophys_experiment_id']).mean()
+            cre_df = x.reset_index() 
+
+        visual = cre_df.query('(visual_strategy_session)').copy()
+        timing = cre_df.query('(not visual_strategy_session)').copy()
+        if version == 8:
+            timing['test_score_FA'] = timing['test_score_FA2']
+        if index == 2:
+            plt.figure(fig1.number)
+            df = plot_by_strategy_scatter(visual,timing,'test_score_FA',
+                savefig,mapper[cre],version,ax1,meso=meso)
+        else:
+            df = plot_by_strategy_scatter(visual,timing,'test_score_FA',
+                False,mapper[cre],version,ax1,meso=meso)
+        stats.append(df)
+    return stats
 
 def plot_by_cre(results_df, aggregate_first=True,areas=['VISp','VISl'],
     equipment=['MESO.1','CAM2P.3','CAM2P.4','CAM2P.5'],ncells=2,
@@ -597,6 +651,25 @@ def decode_cells_sample(cells, n_cells,index=None,FA=False):
         rfc = RandomForestClassifier(class_weight='balanced')
         model['cv_prediction_FA'] = cross_val_predict(rfc, X,y,cv=5)
         model['test_score_FA'] = np.mean(y == model['cv_prediction_FA'])
+
+        # Do decoding on half the dataset, with respect to number of FA
+        index = np.arange(len(y))
+        if sample_cells[0].iloc[0]['FA']:
+            index = index[1:]
+        # check to make sure we have even samples
+        if np.mod(len(index),2) != 0:
+            raise Exception('should have even samples')
+        index = index[0:int(np.floor(len(index)/2))]
+        np.random.shuffle(index)
+        choice = index[0:int(np.floor(len(index)/2))]
+        choice = np.concatenate([[x*2, x*2-1] for x in choice])
+        X2 = X[choice,:]
+        y2 = y[choice]
+        rfc = RandomForestClassifier(class_weight='balanced')
+        model['cv_prediction_FA2'] = cross_val_predict(rfc, X2,y2,cv=5)
+        model['test_score_FA2'] = np.mean(y2 == model['cv_prediction_FA2'])
+
+
     else:
         # Construct X 
         X = []

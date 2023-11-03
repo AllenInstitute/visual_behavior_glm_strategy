@@ -20,7 +20,7 @@ if __name__ == "__main__":
     print('python executable = {}'.format(python_executable))
     python_file = "/home/alex.piet/codebase/GLM/visual_behavior_glm_strategy/scripts/decode.py"
     stdout_basedir = "/allen/programs/braintv/workgroups/nc-ophys/visual_behavior/ophys_glm"
-    stdout_location = os.path.join(stdout_basedir, 'job_records_decoding')
+    stdout_location = os.path.join(stdout_basedir, 'job_records_decoding8')
     if not os.path.exists(stdout_location):
         print('making folder {}'.format(stdout_location))
         os.mkdir(stdout_location)
@@ -47,7 +47,7 @@ if __name__ == "__main__":
         
         # instantiate a SLURM object
         slurm = Slurm(
-            cpus_per_task=4,
+            cpus_per_task=1,
             job_name=job_title,
             time=walltime,
             mem=mem,
