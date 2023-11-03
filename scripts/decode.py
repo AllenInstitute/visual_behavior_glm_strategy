@@ -1,4 +1,4 @@
-import visual_behavior_glm.decoding as d
+import visual_behavior_glm_strategy.decoding as d
 
 import argparse
 
@@ -14,5 +14,5 @@ parser.add_argument(
 if __name__ == '__main__':
     args = parser.parse_args()
 
-    d.decode_experiment(args.ophys_experiment_id)
+    d.decode_experiment(args.ophys_experiment_id,version=7,FA=True)
     print('grand finished')
