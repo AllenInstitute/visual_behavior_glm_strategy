@@ -279,8 +279,6 @@ def plot_by_strategy_scatter(visual, timing, metric, savefig, cell_type,
     
     # get_stats
     df = stats_by_strategy(cell_type,visual,timing,metric)
-    #print('\n\n{}, {}'.format(metric, cell_type))
-    #print(df)    
  
     # visual correlation
     v = visual.groupby('n_cells')
@@ -363,7 +361,9 @@ def plot_by_strategy_scatter(visual, timing, metric, savefig, cell_type,
             fontsize=16)
         if meso:
             ax.set_xlim(0.5,.8)
-            ax.set_ylim(0.5,.8)             
+            ax.set_ylim(0.5,.8)            
+            ax.set_xlim(0.5,.55)
+            ax.set_ylim(0.5,.55)            
         else:
             ax.set_xlim(0.5,.75)
             ax.set_ylim(0.5,.75)      
