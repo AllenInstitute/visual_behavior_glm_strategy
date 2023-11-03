@@ -195,6 +195,9 @@ experiment_table = glm_params.get_experiment_table()
 df3 = d.load_all(experiment_table, summary_df,version=3,mesoscope_only=True)
 d.plot_by_cre(df3,meso=True)
 
+df8 = d.load_all(experiment_table, summary_df,version=8,mesoscope_only=True,FA=True)
+d.plot_by_cre_FA(df8,meso=True,version=8)
+
 
 ## Fig. 6 Engagement PSTHs
 ################################################################################

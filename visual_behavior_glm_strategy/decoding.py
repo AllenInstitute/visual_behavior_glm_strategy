@@ -1,9 +1,9 @@
 import numpy as np
 import pandas as pd
 from visual_behavior.data_access import reformat 
-import visual_behavior_glm.GLM_fit_tools as gft
-import visual_behavior_glm.GLM_visualization_tools as gvt
-import visual_behavior_glm.build_dataframes as bd
+import visual_behavior_glm_strategy.GLM_fit_tools as gft
+import visual_behavior_glm_strategy.GLM_visualization_tools as gvt
+import visual_behavior_glm_strategy.build_dataframes as bd
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import cross_val_score
 from sklearn.model_selection import cross_val_predict
@@ -12,13 +12,7 @@ import scipy.stats as stats
 import matplotlib.pyplot as plt
 from tqdm import tqdm
 
-
-def decode_experiment(oeid, data='events',window=[0,.75]):
-
-    # Load SDK object
-    print('Loading data')
-    run_params = {'include_invalid_rois':False}
-    session = gft.load_data(oeid, run_params)   
+def annotate(session):
     reformat.add_licks_each_flash(session.stimulus_presentations, session.licks) 
     reformat.add_rewards_each_flash(session.stimulus_presentations, session.rewards)
     session.stimulus_presentations['licked'] = [True if len(licks) > 0 else False \
@@ -33,37 +27,65 @@ def decode_experiment(oeid, data='events',window=[0,.75]):
         ~session.stimulus_presentations['is_change'],'hit'] = np.nan
     session.stimulus_presentations.at[\
         ~session.stimulus_presentations['is_change'],'miss'] = np.nan
+    session.stimulus_presentations['FA'] = \
+        session.stimulus_presentations['licked'] & \
+        ~session.stimulus_presentations['is_change'] &\
+        ~session.stimulus_presentations['omitted'] & \
+        ~session.stimulus_presentations['licked'].shift(1,fill_value=False) &\
+        ~session.stimulus_presentations['licked'].shift(2,fill_value=False) &\
+        ~session.stimulus_presentations['omitted'].shift(1,fill_value=False) &\
+        ~session.stimulus_presentations['omitted'].shift(2,fill_value=False) &\
+        ~session.stimulus_presentations['is_change'].shift(1,fill_value=False) &\
+        ~session.stimulus_presentations['is_change'].shift(2,fill_value=False) 
+    session.stimulus_presentations['pre_FA'] = \
+        session.stimulus_presentations['FA'].shift(-1,fill_value=False)
+    return session
 
+
+def decode_experiment(oeid, version, data='events',window=[0,.4],FA=False):
+
+    # Load SDK object
+    print('Loading data')
+    run_params = {'include_invalid_rois':False}
+    session = gft.load_data(oeid, run_params)  
+    session = annotate(session)
+ 
     # get list of cell dataframes
     print('Generating cell dataframes')
-    cells = get_cells(session,data=data,window=window)
+    cells = get_cells(session,data=data,window=window,FA=FA)
 
     # Perform decoding iterating over the number of cells
     print('Decoding')
-    results_df = iterate_n_cells(cells)
+    results_df = iterate_n_cells(cells,FA=FA)
 
     # Save results
     print('Save results')
     filename='/allen/programs/braintv/workgroups/nc-ophys/alex.piet'+\
-        '/behavior/decoding/experiments/' 
-    filename += str(oeid)+'.pkl'
+        '/behavior/decoding/experiments_fit_{}/'.format(version)
+    if FA: 
+        filename += str(oeid)+'_FA.pkl'
+    else:
+        filename += str(oeid)+'.pkl'
     print('Saving to: '+filename)
     results_df.to_pickle(filename)
     print('Finished')
 
 
-def load_experiment_results(oeid,version=None):
+def load_experiment_results(oeid,version=None,FA=False):
     if version is not None:
         filename='/allen/programs/braintv/workgroups/nc-ophys/alex.piet'+\
             '/behavior/decoding/experiments_fit_{}/'.format(version)
     else:
         filename='/allen/programs/braintv/workgroups/nc-ophys/alex.piet'+\
-            '/behavior/decoding/experiments/' 
-    filename += str(oeid)+'.pkl'
+            '/behavior/decoding/experiments/'
+    if FA:
+        filename += str(oeid)+'_FA.pkl'   
+    else: 
+        filename += str(oeid)+'.pkl'
     return pd.read_pickle(filename)
 
 
-def load_all(experiment_table,summary_df,version=None,mesoscope_only=False):
+def load_all(experiment_table,summary_df,version=None,mesoscope_only=False,FA=False):
     
     # Iterate through experiments and load decoding results
     dfs = []
@@ -74,7 +96,7 @@ def load_all(experiment_table,summary_df,version=None,mesoscope_only=False):
 
     for oeid in oeids:
         try:
-            df = load_experiment_results(oeid,version)
+            df = load_experiment_results(oeid,version,FA)
         except:
             failed +=1
         else:
@@ -96,7 +118,7 @@ def load_all(experiment_table,summary_df,version=None,mesoscope_only=False):
     return df
 
 
-def get_cells(session, data='events',window=[0,.75]):
+def get_cells(session, data='events',window=[0,.4],FA=False):
     '''
         Iterate over all cells in this experiment and make a list
         of cell dataframes
@@ -107,7 +129,7 @@ def get_cells(session, data='events',window=[0,.75]):
     cell_specimen_ids = session.cell_specimen_table.index.values
     for cell in tqdm(cell_specimen_ids):
         # Generate the dataframe for this cell
-        cell_df = get_cell_table(session, cell,data=data,window=window)
+        cell_df = get_cell_table(session, cell,data=data,window=window,FA=FA)
         cells.append(cell_df)
     
     # return list of cell dataframes
@@ -115,7 +137,7 @@ def get_cells(session, data='events',window=[0,.75]):
          
 
 def get_cell_table(session, cell_specimen_id, data='events',
-    window=[0,.75],balance=True):
+    window=[0,.4],balance=True,FA=False):
     '''
         Generates a dataframe for one cell where rows are image presentations
         and the response at each timepoint is a column
@@ -134,7 +156,10 @@ def get_cell_table(session, cell_specimen_id, data='events',
 
     # Balance classes by using just changes and the image before
     cell['pre_change'] = cell['is_change'].shift(-1,fill_value=False)
-    if balance:
+
+    if FA:
+        cell = cell.query('FA or pre_FA')
+    elif balance:
         cell = cell.query('is_change or pre_change')
 
     return cell
@@ -254,8 +279,6 @@ def plot_by_strategy_scatter(visual, timing, metric, savefig, cell_type,
     
     # get_stats
     df = stats_by_strategy(cell_type,visual,timing,metric)
-    #print('\n\n{}, {}'.format(metric, cell_type))
-    #print(df)    
  
     # visual correlation
     v = visual.groupby('n_cells')
@@ -329,7 +352,22 @@ def plot_by_strategy_scatter(visual, timing, metric, savefig, cell_type,
         else:
             ax.set_xlim(0.5,.75)
             ax.set_ylim(0.5,.75)      
-        ax.set_title('hit decoder performance',fontsize=16) 
+        ax.set_title('hit decoder performance',fontsize=16)
+    elif metric == 'test_score_FA':
+        ax.plot([0.5, 1],[0.5, 1], 'k--',alpha=.25)
+        ax.set_ylabel('visual sessions',
+            fontsize=16)
+        ax.set_xlabel('timing sessions',
+            fontsize=16)
+        if meso:
+            ax.set_xlim(0.5,.8)
+            ax.set_ylim(0.5,.8)            
+            ax.set_xlim(0.5,.55)
+            ax.set_ylim(0.5,.55)            
+        else:
+            ax.set_xlim(0.5,.75)
+            ax.set_ylim(0.5,.75)      
+        ax.set_title('FA decoder performance',fontsize=16) 
     ax.spines['top'].set_visible(False)
     ax.spines['right'].set_visible(False)
     ax.xaxis.set_tick_params(labelsize=12)
@@ -354,7 +392,7 @@ def plot_by_strategy_scatter(visual, timing, metric, savefig, cell_type,
             filename += 'scatter_by_cre_'+metric+'.svg'
         print(filename)
         plt.savefig(filename)
-
+    return df
 
 def plot_by_strategy_hit_vs_miss(visual, timing, savefig, cell_type):
 
@@ -441,6 +479,47 @@ def plot_by_strategy(results_df,aggregate_first=True,cell_type='exc',
         cell_type,version)
 
 
+def plot_by_cre_FA(results_df, aggregate_first=True,areas=['VISp','VISl'],
+    equipment=['MESO.1','CAM2P.3','CAM2P.4','CAM2P.5'],ncells=2,
+    savefig=False,version=None,meso=False):
+
+    # filter out experiments
+    results_df = results_df.query('experience_level == "Familiar"')
+    results_df = results_df.query('targeted_structure in @areas')
+    results_df = results_df.query('equipment_name in @equipment') 
+    results_df = results_df.query('n_cells > @ncells')
+
+    # Split by strategy
+    cres = ['Slc17a7-IRES2-Cre','Sst-IRES-Cre','Vip-IRES-Cre']
+    mapper = {
+        'Slc17a7-IRES2-Cre':'exc',
+        'Sst-IRES-Cre':'sst',
+        'Vip-IRES-Cre':'vip'
+        }
+    fig1, ax1 = plt.subplots()
+    stats = []
+    for index,cre in enumerate(cres):
+        cre_df = results_df.query('cre_line == @cre')
+        # Average over samples from the same experiment, so each experiment 
+        # is weighted the same
+        if aggregate_first:   
+            x = cre_df.groupby(['n_cells','ophys_experiment_id']).mean()
+            cre_df = x.reset_index() 
+
+        visual = cre_df.query('(visual_strategy_session)').copy()
+        timing = cre_df.query('(not visual_strategy_session)').copy()
+        if version == 8:
+            timing['test_score_FA'] = timing['test_score_FA2']
+        if index == 2:
+            plt.figure(fig1.number)
+            df = plot_by_strategy_scatter(visual,timing,'test_score_FA',
+                savefig,mapper[cre],version,ax1,meso=meso)
+        else:
+            df = plot_by_strategy_scatter(visual,timing,'test_score_FA',
+                False,mapper[cre],version,ax1,meso=meso)
+        stats.append(df)
+    return stats
+
 def plot_by_cre(results_df, aggregate_first=True,areas=['VISp','VISl'],
     equipment=['MESO.1','CAM2P.3','CAM2P.4','CAM2P.5'],ncells=2,
     savefig=False,version=None,meso=False):
@@ -506,7 +585,7 @@ def stats_by_strategy(cre,visual, timing, test='test_score'):
     df = pd.DataFrame(tests)
     return df
 
-def iterate_n_cells(cells):
+def iterate_n_cells(cells,FA=False):
     n_cells = [1,2,5,10,20,40,80]
  
     results = {} 
@@ -514,13 +593,13 @@ def iterate_n_cells(cells):
         if len(cells) < n:
             break
         print('Decoding with n={} cells'.format(n))
-        results[n] = decode_cells(cells, n)
+        results[n] = decode_cells(cells, n,FA=FA)
 
     results_df = pd.concat(results)
     return results_df
 
 
-def decode_cells(cells, n_cells):
+def decode_cells(cells, n_cells,FA=False):
     '''
         Cells is a list of dataframes, one for each cell
         n_cells is the number of cells to decode with in each sample
@@ -537,9 +616,9 @@ def decode_cells(cells, n_cells):
     output = []
     for n in tqdm(range(0,n_samples)):
         if n_cells == 1:
-            temp = decode_cells_sample(cells, n_cells, index=n)
+            temp = decode_cells_sample(cells, n_cells, index=n,FA=FA)
         else:
-            temp = decode_cells_sample(cells, n_cells)
+            temp = decode_cells_sample(cells, n_cells,FA=FA)
         output.append(temp)
 
     # Return the output of the samples
@@ -548,7 +627,7 @@ def decode_cells(cells, n_cells):
     return output_df
 
 
-def decode_cells_sample(cells, n_cells,index=None):
+def decode_cells_sample(cells, n_cells,index=None,FA=False):
     '''
         Sample from the list of cells, and perform decoding once
         returns the output of the decoding
@@ -561,33 +640,64 @@ def decode_cells_sample(cells, n_cells,index=None):
         cells_in_sample = np.random.choice(len(cells),n_cells, replace=False)
         sample_cells = [cells[i] for i in cells_in_sample] 
     
-    # Construct X 
-    X = []
-    for cell in sample_cells:
-        X.append(get_matrix(cell))
-    X = np.concatenate(X,axis=1)
-    
-    # y is the same for every cell, since its a behavioral output
-    y = sample_cells[0]['is_change'].values
+    if FA:
+        X = []
+        for cell in sample_cells:
+            X.append(get_matrix(cell.query('FA or pre_FA')))
+        X = np.concatenate(X,axis=1)
+        y = sample_cells[0].query('FA or pre_FA')['FA'].astype(bool).values
 
-    # run CV decoder: change vs non-change
-    model = {}
-    rfc = RandomForestClassifier(class_weight='balanced')
-    model['cv_prediction'] = cross_val_predict(rfc, X,y,cv=5)
-    model['behavior_correlation'] = compute_behavior_correlation(\
-        sample_cells[0].copy(),model) 
-    model['test_score'] = np.mean(y == model['cv_prediction'])
-    
-    # run CV decoder: hit vs miss
-    X = []
-    for cell in sample_cells:
-        X.append(get_matrix(cell.query('is_change')))
-    X = np.concatenate(X,axis=1)
-    y = sample_cells[0].query('is_change')['hit'].astype(bool).values
+        model = {}
+        rfc = RandomForestClassifier(class_weight='balanced')
+        model['cv_prediction_FA'] = cross_val_predict(rfc, X,y,cv=5)
+        model['test_score_FA'] = np.mean(y == model['cv_prediction_FA'])
 
-    rfc = RandomForestClassifier(class_weight='balanced')
-    model['cv_prediction_hit_vs_miss'] = cross_val_predict(rfc,X,y,cv=5)
-    model['test_score_hit_vs_miss'] = np.mean(y == model['cv_prediction_hit_vs_miss'])   
+        # Do decoding on half the dataset, with respect to number of FA
+        index = np.arange(len(y))
+        if sample_cells[0].iloc[0]['FA']:
+            index = index[1:]
+        # check to make sure we have even samples
+        if np.mod(len(index),2) != 0:
+            raise Exception('should have even samples')
+        index = index[0:int(np.floor(len(index)/2))]
+        np.random.shuffle(index)
+        choice = index[0:int(np.floor(len(index)/2))]
+        choice = np.concatenate([[x*2, x*2-1] for x in choice])
+        X2 = X[choice,:]
+        y2 = y[choice]
+        rfc = RandomForestClassifier(class_weight='balanced')
+        model['cv_prediction_FA2'] = cross_val_predict(rfc, X2,y2,cv=5)
+        model['test_score_FA2'] = np.mean(y2 == model['cv_prediction_FA2'])
+
+
+    else:
+        # Construct X 
+        X = []
+        for cell in sample_cells:
+            X.append(get_matrix(cell))
+        X = np.concatenate(X,axis=1)
+ 
+        # y is the same for every cell, since its a behavioral output
+        y = sample_cells[0]['is_change'].values
+
+        # run CV decoder: change vs non-change
+        model = {}
+        rfc = RandomForestClassifier(class_weight='balanced')
+        model['cv_prediction'] = cross_val_predict(rfc, X,y,cv=5)
+        model['behavior_correlation'] = compute_behavior_correlation(\
+            sample_cells[0].copy(),model) 
+        model['test_score'] = np.mean(y == model['cv_prediction'])
+    
+        # run CV decoder: hit vs miss
+        X = []
+        for cell in sample_cells:
+            X.append(get_matrix(cell.query('is_change')))
+        X = np.concatenate(X,axis=1)
+        y = sample_cells[0].query('is_change')['hit'].astype(bool).values
+
+        rfc = RandomForestClassifier(class_weight='balanced')
+        model['cv_prediction_hit_vs_miss'] = cross_val_predict(rfc,X,y,cv=5)
+        model['test_score_hit_vs_miss'] = np.mean(y == model['cv_prediction_hit_vs_miss'])   
 
     # return results
     return model 
