@@ -408,7 +408,7 @@ def plot_figure_4_behavioral_inner(dfs,data='filtered_events',savefig=False,\
     strategy = 'visual_strategy_session',depth='layer',meso=False,in_ylims=None):
 
     fig, ax = plt.subplots(3,4,figsize=(13,7.75),sharey='row',squeeze=False) 
-    labels=['Excitatory','Sst Inhibitory','Vip Inhibitory']
+    labels=['Excitatory mice','Sst Inhibitory mice','Vip Inhibitory mice']
     error_type='sem'
     ylims = in_ylims
     if ylims is None:
@@ -491,7 +491,7 @@ def plot_figure_4_averages_vip_matched_behavior(data='running',experience_level=
     full_df = dfs[2].query('mouse_id in @mouse_ids').copy()    
 
     fig, ax = plt.subplots(1,4,figsize=(13,2.7),sharey='row',squeeze=False) 
-    label='Vip Inhibitory'
+    label='Vip Inhibitory mice'
     error_type='sem'
     strategy='visual_strategy_session'
     areas=['behavior']
