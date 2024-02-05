@@ -254,6 +254,12 @@ dfs_novel = psth.get_figure_4_psth(data='events',
 psth.plot_figure_4_averages(dfs_novel, data='events',
     experience_level='Novel 1',meso=True)
 
+gpt.plot_PSTH_perturbation(dfs_novel,labels,'image',run_params,meso=True,savefig=True,experience_level='Novel 1')
+gpt.plot_PSTH_perturbation(dfs_novel,labels,'omission',run_params,meso=True,savefig=True,experience_level='Novel 1')
+gpt.plot_PSTH_perturbation(dfs_novel,labels,'hit',run_params,meso=True,savefig=True,experience_level='Novel 1')
+gpt.plot_PSTH_perturbation(dfs_novel,labels,'miss',run_params,meso=True,savefig=True,experience_level='Novel 1')
+
+
 ## Supplement - reward censored PSTHs 
 ################################################################################
 dfs = psth.get_figure_4_psth(data='events',mesoscope_only=True)

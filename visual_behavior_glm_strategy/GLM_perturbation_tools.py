@@ -536,7 +536,7 @@ def plot_PSTH_perturbation(dfs,labels,condition,run_params=None,savefig=False,
     experience_level="Familiar",x='Exc',y='Vip',min_time=-.75,plot_error=False,
     meso=False):
 
-    traces = get_PSTH_2D_traces(dfs,labels,condition)
+    traces = get_PSTH_2D_traces(dfs,labels,condition,experience_level=experience_level)
 
     height = 4
     if x=='Sst':
